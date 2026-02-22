@@ -1,0 +1,777 @@
+.page {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  background: #090f10;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.page__glow,
+.page__glow_empty {
+  position: fixed;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 400px;
+  background: radial-gradient(
+    ellipse,
+    rgba(201, 168, 76, 0.055) 0%,
+    transparent 68%
+  );
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page__glow_empty {
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.page__content {
+  min-height: 100vh;
+  position: relative;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 28px 24px 48px;
+  z-index: 1;
+}
+
+/* Header */
+.page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.page__header-icon {
+  display: inline-block;
+}
+
+.page__header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page__header-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c9a84c;
+}
+
+.page__title {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.page__subtitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.32);
+  margin-top: 1px;
+}
+
+.page__header-right {
+  text-align: right;
+}
+
+.page__header-time-row {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.page__refresh-location {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 18px;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.page__refresh-location:hover {
+  color: #c9a84c;
+  border-color: rgba(201, 168, 76, 0.4);
+  background: rgba(201, 168, 76, 0.08);
+}
+
+.page__time {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  font-variant-numeric: tabular-nums;
+}
+
+.page__date {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.32);
+  margin-top: 2px;
+}
+
+/* Prayer strip */
+.page__prayer-strip {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 28px;
+  grid-template-columns: repeat(5, 1fr);
+}
+
+/* Main grid */
+.page__main-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Left panel - Selected prayer */
+.page__left-panel {
+  border-radius: 1rem;
+  overflow: hidden;
+  background: rgba(14, 24, 26, 0.95);
+  border: 1px solid rgba(201, 168, 76, 0.28);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+  position: sticky;
+  top: 24px;
+}
+
+.page__left-panel-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c9a84c, transparent);
+}
+
+.page__left-panel-inner {
+  padding: 24px 22px;
+}
+
+.page__section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.32);
+  margin-bottom: 16px;
+  font-family: 'Syne', sans-serif;
+}
+
+.page__prayer-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 38px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.page__prayer-arabic {
+  font-family: 'Amiri', serif;
+  font-size: 26px;
+  color: #c9a84c;
+  opacity: 0.8;
+  margin-bottom: 18px;
+}
+
+.page__prayer-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.page__prayer-time {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.page__prayer-meta-divider {
+  width: 1px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.page__prayer-status {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.page__stats-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.page__stats-list {
+  flex: 1;
+}
+
+.page__stats-row-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.page__stats-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.page__stats-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.page__stats-value--accent {
+  color: #c9a84c;
+}
+
+.page__athkar-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.32);
+  margin-bottom: 12px;
+  font-family: 'Syne', sans-serif;
+}
+
+/* Right panel - Tasks */
+.page__right-panel {
+  border-radius: 1rem;
+  overflow: hidden;
+  background: rgba(18, 30, 32, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.page__right-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 26px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.page__right-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.page__right-subtitle {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.32);
+  margin-top: 2px;
+}
+
+.page__right-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: rgba(201, 168, 76, 0.12);
+  color: #c9a84c;
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  font-family: 'Syne', sans-serif;
+}
+
+.page__date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 26px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.page__date-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+  font-family: inherit;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.page__date-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.page__date-nav-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  min-width: 120px;
+  text-align: center;
+}
+
+.page__filter-row {
+  display: flex;
+  gap: 6px;
+  padding: 12px 26px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.page__filter-btn {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 12px;
+  font-family: 'DM Sans', sans-serif;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.32);
+  border-radius: 99px;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.page__filter-btn--active {
+  background: rgba(201, 168, 76, 0.12);
+  border-color: rgba(201, 168, 76, 0.3);
+  color: #c9a84c;
+}
+
+.page__todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  padding: 14px 26px;
+  min-height: 160px;
+  max-height: 380px;
+}
+
+.page__content > .page__empty-state {
+  height: 100vh;
+}
+
+.page__empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.14);
+}
+
+.page__todo-list .page__empty-state {
+  height: auto;
+  min-height: 160px;
+  padding: 24px 0;
+}
+
+.page__empty-state-icon {
+  font-size: 32px;
+  opacity: 0.4;
+}
+
+.page__empty-state-text {
+  font-size: 13px;
+}
+
+.page__add-row {
+  padding: 12px 26px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.page__add-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 1rem;
+  padding: 11px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: all 0.25s;
+}
+
+.page__add-icon {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.page__add-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: rgba(255, 255, 255, 0.82);
+  caret-color: #c9a84c;
+}
+
+.page__add-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.page__add-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 13px;
+  border-radius: 10px;
+  background: #c9a84c;
+  color: #090f10;
+  border: none;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  white-space: nowrap;
+}
+
+.page__day-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 26px;
+  background: rgba(0, 0, 0, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.page__day-progress-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.32);
+  white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.page__day-progress-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.page__day-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c9a84c, #e8c96a);
+  transition: width 0.7s ease;
+  border-radius: 99px;
+}
+
+.page__day-progress-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #c9a84c;
+  font-family: 'Syne', sans-serif;
+  white-space: nowrap;
+}
+
+/* ----- Responsive ----- */
+
+/* Glow scales down on small viewports */
+@media (max-width: 768px) {
+  .page__glow,
+  .page__glow_empty {
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+/* Tablet and below: single column layout, compact prayer strip */
+@media (max-width: 1024px) {
+  .page__content {
+    padding: 20px 16px 32px;
+  }
+
+  .page__main-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .page__left-panel {
+    position: static;
+    top: auto;
+  }
+
+  .page__prayer-strip {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .page__header {
+    margin-bottom: 20px;
+  }
+
+  .page__prayer-title {
+    font-size: 32px;
+  }
+
+  .page__prayer-arabic {
+    font-size: 22px;
+  }
+}
+
+/* Small tablet / large phone */
+@media (max-width: 768px) {
+  .page__content {
+    padding: 16px 14px 28px;
+  }
+
+  .page__header {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .page__header-right {
+    width: 100%;
+    text-align: left;
+  }
+
+  .page__header-time-row {
+    gap: 12px;
+  }
+
+  .page__time {
+    font-size: 22px;
+  }
+
+  .page__prayer-strip {
+    grid-template-columns: repeat(5, minmax(72px, 1fr));
+    gap: 6px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .page__left-panel-inner {
+    padding: 18px 16px;
+  }
+
+  .page__prayer-title {
+    font-size: 28px;
+  }
+
+  .page__prayer-arabic {
+    font-size: 20px;
+  }
+
+  .page__stats-row {
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .page__right-header {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 18px 14px;
+  }
+
+  .page__right-title {
+    font-size: 16px;
+  }
+
+  .page__right-subtitle {
+    font-size: 12px;
+  }
+
+  .page__date-nav {
+    padding: 8px 18px;
+    gap: 12px;
+  }
+
+  .page__date-nav-label {
+    min-width: 100px;
+    font-size: 12px;
+  }
+
+  .page__filter-row {
+    padding: 10px 18px;
+  }
+
+  .page__todo-list {
+    padding: 12px 18px;
+    min-height: 120px;
+    max-height: 320px;
+  }
+
+  .page__add-row {
+    padding: 10px 18px 16px;
+  }
+
+  .page__add-inner {
+    padding: 10px 14px;
+  }
+
+  .page__add-input {
+    font-size: 16px; /* avoids zoom on focus on iOS */
+  }
+
+  .page__day-progress {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 18px;
+  }
+
+  .page__day-progress-label {
+    font-size: 11px;
+  }
+
+  .page__day-progress-track {
+    order: 3;
+    width: 100%;
+    flex: none;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .page__content {
+    padding: 12px 12px 24px;
+  }
+
+  .page__title {
+    font-size: 15px;
+  }
+
+  .page__subtitle {
+    font-size: 11px;
+  }
+
+  .page__header-time-row {
+    flex-wrap: wrap;
+  }
+
+  .page__prayer-strip {
+    grid-template-columns: repeat(5, minmax(64px, 1fr));
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .page__left-panel-inner {
+    padding: 14px 12px;
+  }
+
+  .page__section-label {
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    margin-bottom: 12px;
+  }
+
+  .page__prayer-title {
+    font-size: 24px;
+  }
+
+  .page__prayer-arabic {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .page__prayer-meta {
+    margin-bottom: 16px;
+  }
+
+  .page__stats-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .page__athkar-label {
+    margin-bottom: 10px;
+  }
+
+  .page__right-header {
+    padding: 14px 14px 12px;
+  }
+
+  .page__right-title {
+    font-size: 15px;
+  }
+
+  .page__right-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .page__date-nav-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+
+  .page__filter-btn {
+    font-size: 10px;
+    padding: 4px 10px;
+  }
+
+  .page__todo-list {
+    padding: 10px 14px;
+    max-height: 280px;
+  }
+
+  .page__add-row {
+    padding: 8px 14px 14px;
+  }
+
+  .page__add-inner {
+    padding: 8px 12px;
+  }
+
+  .page__add-btn {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .page__day-progress-label,
+  .page__day-progress-value {
+    font-size: 11px;
+  }
+}
+
+/* Very small screens: ensure touch targets and no overflow */
+@media (max-width: 360px) {
+  .page__content {
+    padding: 10px 10px 20px;
+  }
+
+  .page__prayer-strip {
+    grid-template-columns: repeat(5, minmax(56px, 1fr));
+  }
+
+  .page__refresh-location {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+}

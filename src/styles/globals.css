@@ -1,0 +1,53 @@
+@import url("https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap");
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(201, 168, 76, 0.25);
+  border-radius: 2px;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pd {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(201, 168, 76, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(201, 168, 76, 0);
+  }
+}
+
+.anim-fade-up-0 {
+  animation: fadeUp 0.45s ease both;
+}
+
+.anim-fade-up-1 {
+  animation: fadeUp 0.45s ease both;
+  animation-delay: 60ms;
+}
+
+.anim-fade-up-2 {
+  animation: fadeUp 0.45s ease both;
+  animation-delay: 140ms;
+}
+
+.anim-pulse-dot {
+  animation: pd 2.5s infinite;
+}
