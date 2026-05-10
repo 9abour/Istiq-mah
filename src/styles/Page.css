@@ -408,6 +408,37 @@
 .page__add-row {
   padding: 12px 26px 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.page__add-time-row {
+  padding-left: 4px;
+}
+
+.page__add-hint {
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 0 2px 2px;
+}
+
+.page__add-hint-link {
+  background: none;
+  border: none;
+  color: rgba(201, 168, 76, 0.65);
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+
+.page__add-hint-link:hover {
+  color: rgba(201, 168, 76, 0.9);
 }
 
 .page__add-inner {

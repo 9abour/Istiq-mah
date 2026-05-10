@@ -1,0 +1,502 @@
+/* ═══════════════════════════════════════════════════════
+   Trigger button
+════════════════════════════════════════════════════════ */
+.trp {
+  position: relative;
+  display: inline-flex;
+}
+
+.trp__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.15);
+  background: none;
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+
+.trp__trigger:hover {
+  border-color: rgba(201, 168, 76, 0.4);
+  color: rgba(201, 168, 76, 0.8);
+  background: rgba(201, 168, 76, 0.05);
+}
+
+.trp__trigger--set {
+  border-style: solid;
+  border-color: rgba(201, 168, 76, 0.35);
+  color: rgba(201, 168, 76, 0.9);
+  background: rgba(201, 168, 76, 0.07);
+}
+
+.trp__clock-icon { flex-shrink: 0; }
+
+.trp__trigger-placeholder { font-weight: 400; }
+.trp__trigger-time        { font-weight: 500; }
+
+.trp__trigger-dash {
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0 1px;
+}
+
+.trp__trigger-dur {
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(201, 168, 76, 0.55);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Modal overlay
+════════════════════════════════════════════════════════ */
+.trp-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(5, 10, 12, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: trp-fade-in 0.15s ease;
+}
+
+@keyframes trp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   Modal container
+════════════════════════════════════════════════════════ */
+.trp-modal {
+  width: 100%;
+  max-width: 420px;
+  background: #141c1e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.8),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: trp-slide-up 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 32px);
+}
+
+@keyframes trp-slide-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+/* ── Header ──────────────────────────────────────────── */
+.trp-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 20px 0;
+  gap: 12px;
+}
+
+.trp-modal__head-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trp-modal__title {
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: -0.01em;
+}
+
+.trp-modal__ctx {
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  color: rgba(201, 168, 76, 0.65);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.trp-modal__close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  margin-top: -2px;
+}
+
+.trp-modal__close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ── Summary chips (Google Calendar "Start → End" style) */
+.trp-modal__summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px 0;
+}
+
+.trp-modal__chip {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+}
+
+.trp-modal__chip--empty {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.trp-modal__chip-lbl {
+  font-size: 9px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.trp-modal__chip-val {
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  color: rgba(201, 168, 76, 0.95);
+  letter-spacing: -0.01em;
+}
+
+.trp-modal__chip--empty .trp-modal__chip-val {
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 400;
+}
+
+.trp-modal__sum-arrow {
+  color: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.trp-modal__sum-dur {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ── Hint text ───────────────────────────────────────── */
+.trp-modal__hint {
+  padding: 8px 20px 0;
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.01em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Timeline
+════════════════════════════════════════════════════════ */
+.trp-modal__timeline {
+  display: flex;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: 12px 0 0;
+  max-height: 340px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+}
+
+.trp-modal__timeline::-webkit-scrollbar { width: 4px; }
+.trp-modal__timeline::-webkit-scrollbar-track { background: transparent; }
+.trp-modal__timeline::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* ── Time ruler (left column) ────────────────────────── */
+.trp-modal__ruler {
+  flex-shrink: 0;
+  width: 52px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.015);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.trp-modal__ruler-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-right: 8px;
+  padding-top: 1px;
+}
+
+.trp-modal__ruler-lbl {
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.trp-modal__ruler-lbl--hour {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.trp-modal__ruler-lbl--half {
+  font-size: 9px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Grid ────────────────────────────────────────────── */
+.trp-modal__grid {
+  flex: 1;
+  position: relative;
+  cursor: crosshair;
+  user-select: none;
+}
+
+.trp-modal__row {
+  width: 100%;
+  border-top: 1px solid transparent;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Hour line — solid, more visible */
+.trp-modal__row--hour {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Half-hour line — dashed, subtle */
+.trp-modal__row--half {
+  border-top: 1px dashed rgba(255, 255, 255, 0.045);
+}
+
+/* Midnight boundary — accent line */
+.trp-modal__row--midnight {
+  border-top: 2px solid rgba(201, 168, 76, 0.25);
+}
+
+/* Hover shimmer on rows */
+.trp-modal__grid:hover .trp-modal__row:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Selection block (the draggable event rectangle)
+════════════════════════════════════════════════════════ */
+.trp-modal__block {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  border-radius: 6px;
+  background: rgba(201, 168, 76, 0.18);
+  border: 1.5px solid rgba(201, 168, 76, 0.65);
+  box-shadow: 0 2px 12px rgba(201, 168, 76, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+  z-index: 10;
+}
+
+.trp-modal__block--dragging {
+  box-shadow: 0 4px 20px rgba(201, 168, 76, 0.25);
+  background: rgba(201, 168, 76, 0.22);
+}
+
+/* ── Resize handles ──────────────────────────────────── */
+.trp-modal__handle {
+  flex-shrink: 0;
+  height: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.trp-modal__handle--top  { cursor: n-resize; }
+.trp-modal__handle--bottom { cursor: s-resize; }
+
+.trp-modal__handle::after {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(201, 168, 76, 0.75);
+  transition: background 0.15s, width 0.15s;
+}
+
+.trp-modal__handle:hover::after {
+  background: rgba(201, 168, 76, 1);
+  width: 36px;
+}
+
+/* ── Block label content ─────────────────────────────── */
+.trp-modal__block-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 7px;
+  overflow: hidden;
+  gap: 1px;
+}
+
+.trp-modal__block-start,
+.trp-modal__block-end {
+  font-size: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  color: rgba(201, 168, 76, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.trp-modal__block-dur {
+  font-size: 9px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  color: rgba(201, 168, 76, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Footer
+════════════════════════════════════════════════════════ */
+.trp-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px 16px;
+  gap: 8px;
+}
+
+.trp-modal__clear {
+  background: none;
+  border: none;
+  color: rgba(255, 100, 100, 0.55);
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.trp-modal__clear:hover {
+  background: rgba(255, 80, 80, 0.1);
+  color: rgba(255, 100, 100, 0.85);
+}
+
+.trp-modal__footer-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.trp-modal__cancel {
+  padding: 7px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.trp-modal__cancel:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.trp-modal__confirm {
+  padding: 7px 20px;
+  border-radius: 10px;
+  border: none;
+  background: #c9a84c;
+  color: #0a0f10;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.trp-modal__confirm:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.trp-modal__confirm:active {
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Responsive
+════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .trp-modal {
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .trp-modal__overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  @keyframes trp-slide-up {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0);    }
+  }
+}

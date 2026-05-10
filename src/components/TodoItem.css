@@ -35,8 +35,15 @@
   box-shadow: 0 0 10px rgba(201, 168, 76, 0.4);
 }
 
-.todo-item__text {
+.todo-item__body {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.todo-item__text {
   font-size: 14px;
   font-family: "DM Sans", sans-serif;
   color: rgba(255, 255, 255, 0.82);
@@ -49,19 +56,212 @@
   text-decoration: line-through;
 }
 
-.todo-item__delete {
-  opacity: 0;
-  transition: opacity 0.2s;
+.todo-item__meta {
   display: flex;
   align-items: center;
-  padding: 4px;
-  border-radius: 8px;
-  color: rgba(255, 80, 80, 0.5);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.todo-item__time {
+  font-size: 11px;
+  font-family: "DM Sans", sans-serif;
+  color: rgba(201, 168, 76, 0.75);
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.15);
+  border-radius: 6px;
+  padding: 2px 7px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ── Compact TimeRangePicker trigger inside todo meta row ────── */
+.todo-item__meta .trp__trigger {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  gap: 4px;
+}
+
+.todo-item__meta .trp__trigger .trp__clock-icon {
+  width: 11px;
+  height: 11px;
+}
+
+.todo-item__meta .trp__trigger-dur {
+  font-size: 10px;
+}
+
+.todo-item__cal-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  font-family: "DM Sans", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.todo-item__cal-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.todo-item__cal-btn--synced {
+  color: #4caf8a;
+  border-color: rgba(76, 175, 138, 0.3);
+  background: rgba(76, 175, 138, 0.07);
+}
+
+.todo-item__cal-btn--synced:hover:not(:disabled) {
+  background: rgba(255, 80, 80, 0.08);
+  border-color: rgba(255, 80, 80, 0.25);
+  color: rgba(255, 100, 100, 0.7);
+}
+
+.todo-item__cal-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.todo-item__cal-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  animation: cal-spin 0.6s linear infinite;
+}
+
+@keyframes cal-spin {
+  to { transform: rotate(360deg); }
+}
+
+.todo-item__cal-error {
+  font-size: 10px;
+  color: rgba(255, 100, 100, 0.75);
+  font-family: "DM Sans", sans-serif;
+}
+
+/* ── Action buttons (edit + delete) ─────────────────────────── */
+
+.todo-item__actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  margin-top: 2px;
+}
+
+.todo-item:hover .todo-item__actions {
+  opacity: 1;
+}
+
+.todo-item__edit-btn,
+.todo-item__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-radius: 7px;
   background: none;
   border: none;
   cursor: pointer;
+  transition: background 0.15s, color 0.15s;
 }
 
-.todo-item:hover .todo-item__delete {
-  opacity: 1;
+.todo-item__edit-btn {
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.todo-item__edit-btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.todo-item__delete {
+  color: rgba(255, 80, 80, 0.4);
+}
+
+.todo-item__delete:hover:not(:disabled) {
+  background: rgba(255, 80, 80, 0.1);
+  color: rgba(255, 100, 100, 0.75);
+}
+
+.todo-item__delete:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── Inline edit ─────────────────────────────────────────────── */
+
+.todo-item--editing {
+  cursor: default;
+}
+
+.todo-item__edit-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.todo-item__edit-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  border-radius: 7px;
+  padding: 4px 9px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 14px;
+  font-family: "DM Sans", sans-serif;
+  outline: none;
+  min-width: 0;
+}
+
+.todo-item__edit-input:focus {
+  border-color: rgba(201, 168, 76, 0.65);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.todo-item__edit-save,
+.todo-item__edit-cancel {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.todo-item__edit-save {
+  background: rgba(201, 168, 76, 0.12);
+  color: rgba(201, 168, 76, 0.85);
+}
+
+.todo-item__edit-save:hover {
+  background: rgba(201, 168, 76, 0.22);
+  color: #c9a84c;
+}
+
+.todo-item__edit-cancel {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.todo-item__edit-cancel:hover {
+  background: rgba(255, 80, 80, 0.1);
+  color: rgba(255, 100, 100, 0.7);
 }
