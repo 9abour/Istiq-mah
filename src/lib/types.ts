@@ -7,6 +7,12 @@ export type Todo = {
   prayerName: PrayerName;
   /** ISO date string YYYY-MM-DD; todos are scoped per day */
   date: string;
+  /** 24-h HH:MM format, e.g. "09:30" */
+  startTime?: string;
+  /** 24-h HH:MM format, e.g. "10:00" */
+  endTime?: string;
+  /** Google Calendar event ID when synced */
+  calendarEventId?: string;
 };
 
 export type PrayerName = "Fajr" | "Dhuhr" | "Asr" | "Maghrib" | "Isha";
