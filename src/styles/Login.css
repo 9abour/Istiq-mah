@@ -1,0 +1,444 @@
+/* ── Page shell ──────────────────────────────────────────────────── */
+.lp {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #090f10;
+  position: relative;
+  overflow: hidden;
+  padding: 24px 16px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Gold atmospheric glow */
+.lp__glow {
+  position: fixed;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 820px;
+  height: 420px;
+  background: radial-gradient(
+    ellipse,
+    rgba(201, 168, 76, 0.08) 0%,
+    transparent 68%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Geometric concentric rings in background */
+.lp__geo {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.lp__geo-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(201, 168, 76, 0.04);
+}
+
+.lp__geo-ring--1 {
+  width: 300px;
+  height: 300px;
+}
+.lp__geo-ring--2 {
+  width: 500px;
+  height: 500px;
+}
+.lp__geo-ring--3 {
+  width: 700px;
+  height: 700px;
+}
+.lp__geo-ring--4 {
+  width: 900px;
+  height: 900px;
+}
+.lp__geo-ring--5 {
+  width: 1100px;
+  height: 1100px;
+}
+.lp__geo-ring--6 {
+  width: 1300px;
+  height: 1300px;
+}
+
+/* Loading */
+.lp__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.lp__loading-ring {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(201, 168, 76, 0.15);
+  border-top-color: #c9a84c;
+  border-radius: 50%;
+  animation: lp-spin 0.8s linear infinite;
+}
+
+@keyframes lp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Card ────────────────────────────────────────────────────────── */
+.lp__card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 24px;
+  padding: 40px 36px 36px;
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(201, 168, 76, 0.06) inset;
+  animation: lp-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes lp-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Brand ───────────────────────────────────────────────────────── */
+.lp__brand {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.lp__logo {
+  font-size: 44px;
+  line-height: 1;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 20px rgba(201, 168, 76, 0.45));
+  display: block;
+  margin: 12px auto;
+}
+
+.lp__title {
+  font-family: 'Syne', 'DM Sans', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0 0 8px;
+  letter-spacing: -0.3px;
+}
+
+.lp__subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.38);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+/* ── Sign-in area ────────────────────────────────────────────────── */
+.lp__signin {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.lp__google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.15s;
+  user-select: none;
+}
+
+.lp__google-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.lp__google-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.lp__google-btn:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.lp__btn-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.18);
+  border-top-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: lp-spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+.lp__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(220, 60, 60, 0.1);
+  border: 1px solid rgba(220, 60, 60, 0.25);
+  font-size: 12px;
+  color: rgba(255, 130, 130, 0.9);
+  line-height: 1.5;
+  animation: lp-enter 0.18s ease;
+}
+
+.lp__error-close {
+  background: none;
+  border: none;
+  color: rgba(255, 130, 130, 0.5);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: auto;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.lp__error-close:hover {
+  color: rgba(255, 130, 130, 1);
+}
+
+.lp__terms {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.22);
+  text-align: center;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Divider ─────────────────────────────────────────────────────── */
+.lp__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.lp__divider::before,
+.lp__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* ── Features ────────────────────────────────────────────────────── */
+.lp__features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lp__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.lp__feature-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.lp__feature-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  margin-bottom: 2px;
+}
+
+.lp__feature-desc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.32);
+  line-height: 1.5;
+}
+
+/* ── Setup guide (when Firebase not configured) ──────────────────── */
+.lp__setup-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: rgba(255, 160, 60, 0.1);
+  border: 1px solid rgba(255, 160, 60, 0.25);
+  color: rgba(255, 175, 80, 0.85);
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+}
+
+.lp__setup-intro {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 18px;
+  line-height: 1.55;
+}
+
+.lp__steps {
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lp__step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.lp__step-n {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(201, 168, 76, 0.12);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  color: #c9a84c;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.lp__step-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.58);
+  line-height: 1.55;
+}
+
+.lp__env-block {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.lp__env-label {
+  padding: 7px 14px;
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  letter-spacing: 0.05em;
+}
+
+.lp__env-pre {
+  margin: 0;
+  padding: 14px;
+  font-size: 11px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: rgba(201, 168, 76, 0.7);
+  line-height: 1.7;
+  overflow-x: auto;
+}
+
+.lp__anon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  text-decoration: none;
+  transition:
+    background 0.18s,
+    color 0.18s;
+}
+
+.lp__anon-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.lp__anon-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.04em;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .lp__card {
+    padding: 32px 24px 28px;
+    border-radius: 20px;
+  }
+
+  .lp__title {
+    font-size: 24px;
+  }
+
+  .lp__google-btn {
+    font-size: 14px;
+    padding: 13px 16px;
+  }
+}
