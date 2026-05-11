@@ -2,14 +2,29 @@ import type { Todo } from "../lib/types";
 
 const CALENDAR_API = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
 
-function buildEvent(todo: Todo, date: string) {
+/**
+ * @param overrideDone  When provided, uses this value instead of todo.done.
+ *                      Needed right after an optimistic toggle before the
+ *                      component re-renders with the new state.
+ */
+function buildEvent(todo: Todo, date: string, overrideDone?: boolean) {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const hasTime = todo.startTime && todo.endTime;
+  const isDone = overrideDone !== undefined ? overrideDone : todo.done;
+
+  // ✓ prefix + Sage green when complete; plain title + default color otherwise.
+  const summary = isDone ? `✓ ${todo.text}` : todo.text;
+  const colorId = isDone ? "2" : "0"; // "2" = Sage, "0" = calendar default
+
+  const base = {
+    summary,
+    colorId,
+    description: `Prayer: ${todo.prayerName} · Istiqāmah`,
+  };
 
   if (hasTime) {
     return {
-      summary: todo.text,
-      description: `Prayer: ${todo.prayerName} · Istiqāmah`,
+      ...base,
       start: { dateTime: `${date}T${todo.startTime}:00`, timeZone: tz },
       end: { dateTime: `${date}T${todo.endTime}:00`, timeZone: tz },
       reminders: {
@@ -20,8 +35,7 @@ function buildEvent(todo: Todo, date: string) {
   }
 
   return {
-    summary: todo.text,
-    description: `Prayer: ${todo.prayerName} · Istiqāmah`,
+    ...base,
     start: { date },
     end: { date },
     reminders: { useDefault: true },
@@ -56,7 +70,8 @@ export async function updateCalendarEvent(
   accessToken: string,
   eventId: string,
   todo: Todo,
-  date: string
+  date: string,
+  overrideDone?: boolean
 ): Promise<void> {
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
@@ -66,7 +81,7 @@ export async function updateCalendarEvent(
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(buildEvent(todo, date)),
+      body: JSON.stringify(buildEvent(todo, date, overrideDone)),
     }
   );
   if (res.status === 401) throw new Error("UNAUTHORIZED");

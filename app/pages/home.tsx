@@ -67,16 +67,19 @@ function Home() {
   );
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [prayers, setPrayers] = useState<Prayer[]>([]);
+  const [loadingPrayers, setLoadingPrayers] = useState(false);
   const [selected, setSelected] = useState(0);
   const [filter, setFilter] = useState<Filter>('all');
   const [addText, setAddText] = useState('');
   const [addStart, setAddStart] = useState<string | undefined>(undefined);
   const [addEnd, setAddEnd] = useState<string | undefined>(undefined);
+  const [addLoading, setAddLoading] = useState(false);
   const [now, setNow] = useState(new Date());
   const [athkar, setAthkar] = useState<Athkar | null>(null);
   const [selectedDate, setSelectedDate] = useState(() =>
     toDateString(new Date())
   );
+  const [errorVisible, setErrorVisible] = useState(false);
   const addRef = useRef<HTMLInputElement>(null);
 
   const navigate = useNavigate();
@@ -115,6 +118,7 @@ function Home() {
   const {
     todos,
     loading: todosLoading,
+    error,
     fetchTodos,
     addTodo,
     toggleTodo,
@@ -127,7 +131,14 @@ function Home() {
 
   const nowIdx = prayers.length ? getNowIdx(prayers) : 0;
   const prayer = prayers[selected];
-  const prayerTodos = prayer ? getTodosByPrayer(prayer.name) : [];
+  const prayerTodos = (prayer ? getTodosByPrayer(prayer.name) : [])
+    .slice()
+    .sort((a: Todo, b: Todo) => {
+      if (!a.startTime && !b.startTime) return 0;
+      if (!a.startTime) return 1;
+      if (!b.startTime) return -1;
+      return a.startTime.localeCompare(b.startTime);
+    });
 
   // ── Prayer-window bounds for the time range picker ──────────────────────
   // Window = from this prayer's time → next prayer's time.
@@ -157,10 +168,16 @@ function Home() {
     : 0;
 
   useEffect(() => {
+    if (error) setErrorVisible(true);
+  }, [error]);
+
+  useEffect(() => {
     if (!location) return;
+    setLoadingPrayers(true);
     getPrayers(location).then((p) => {
       setPrayers(p);
       setSelected(getNowIdx(p));
+      setLoadingPrayers(false);
     });
   }, [location]);
 
@@ -182,9 +199,11 @@ function Home() {
     return () => clearInterval(t);
   }, []);
 
-  const handleAdd = () => {
-    if (!prayer || !addText.trim()) return;
-    addTodo(selectedDate, prayer.name, addText, addStart, addEnd);
+  const handleAdd = async () => {
+    if (!prayer || !addText.trim() || addLoading) return;
+    setAddLoading(true);
+    await addTodo(selectedDate, prayer.name, addText, addStart, addEnd);
+    setAddLoading(false);
     setAddText('');
     setAddStart(undefined);
     setAddEnd(undefined);
@@ -237,7 +256,7 @@ function Home() {
     );
   }
 
-  if (!prayers.length) {
+  if (loadingPrayers || !prayers.length) {
     return (
       <main className="page">
         <GeoBg />
@@ -245,7 +264,7 @@ function Home() {
         <div className="page__content" style={{ alignItems: 'center', justifyContent: 'center' }}>
           <div className="page__empty-state">
             <div className="page__empty-state-icon">🕌</div>
-            <div className="page__empty-state-text">Loading…</div>
+            <div className="page__empty-state-text">Loading prayer times…</div>
           </div>
         </div>
       </main>
@@ -371,6 +390,20 @@ function Home() {
               <span className="page__right-badge">{pDone}/{pTotal} done</span>
             </div>
 
+            {errorVisible && error && (
+              <div className="page__error-banner" role="alert">
+                <span>{error}</span>
+                <button
+                  type="button"
+                  className="page__error-dismiss"
+                  onClick={() => setErrorVisible(false)}
+                  aria-label="Dismiss error"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             <div className="page__date-nav">
               <button type="button" className="page__date-nav-btn" onClick={goToPrevDay} aria-label="Previous day">‹</button>
               <span className="page__date-nav-label">{formatDateLabel(selectedDate)}</span>
@@ -390,7 +423,9 @@ function Home() {
               ))}
             </div>
 
-            <div className="page__todo-list">
+            {todosLoading && <div className="page__loading-bar" aria-hidden="true" />}
+
+            <div className={`page__todo-list ${todosLoading && todos.length > 0 ? 'page__todo-list--loading' : ''}`}>
               {todosLoading && todos.length === 0 ? (
                 <div className="page__empty-state">
                   <div className="page__empty-state-text">Loading tasks…</div>
@@ -443,8 +478,13 @@ function Home() {
                   className="page__add-input"
                 />
                 {addText && (
-                  <button type="button" onClick={handleAdd} className="page__add-btn">
-                    Add
+                  <button
+                    type="button"
+                    onClick={handleAdd}
+                    disabled={addLoading}
+                    className={`page__add-btn ${addLoading ? 'page__add-btn--loading' : ''}`}
+                  >
+                    {addLoading ? <span className="page__add-spinner" aria-hidden="true" /> : 'Add'}
                   </button>
                 )}
               </div>

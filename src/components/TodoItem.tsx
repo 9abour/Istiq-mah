@@ -92,6 +92,26 @@ export function TodoItem({
   const isSynced = Boolean(todo.calendarEventId);
   const canSync = Boolean(user && todo.startTime && todo.endTime);
 
+  // ── Toggle with calendar status sync ────────────────────────────────────────
+
+  const handleToggle = async () => {
+    const newDone = !todo.done;
+    onToggle(); // optimistic store update — sync, no await needed
+    if (isSynced && todo.calendarEventId && googleAccessToken) {
+      try {
+        await updateCalendarEvent(
+          googleAccessToken,
+          todo.calendarEventId,
+          todo,
+          selectedDate,
+          newDone
+        );
+      } catch {
+        // Best-effort — local state already toggled
+      }
+    }
+  };
+
   // ── Edit helpers ────────────────────────────────────────────────────────────
 
   const startEdit = (e: React.MouseEvent) => {
@@ -211,7 +231,7 @@ export function TodoItem({
 
   return (
     <div
-      onClick={editing ? undefined : onToggle}
+      onClick={editing ? undefined : handleToggle}
       className={`todo-item group ${todo.done ? "todo-item--done" : ""} ${editing ? "todo-item--editing" : ""}`}
     >
       <div className="todo-item__checkbox">
