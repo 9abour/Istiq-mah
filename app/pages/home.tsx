@@ -1,37 +1,37 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { LOGO_ICON } from 'public/icons/common';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { AthkarCard } from '../../src/components/AthkarCard';
+import { GeoBg } from '../../src/components/GeoBg';
+import { LocationModal } from '../../src/components/LocationModal';
+import { LoginButton } from '../../src/components/LoginButton';
+import { PrayerCard } from '../../src/components/PrayerCard';
+import { ProgressRing } from '../../src/components/ProgressRing';
+import { TimeRangePicker } from '../../src/components/TimeRangePicker';
+import { TodoItem } from '../../src/components/TodoItem';
+import { getStored, STORAGE_KEYS } from '../../src/lib/storage';
 import type {
+  Athkar,
   Filter,
   Prayer,
-  Athkar,
-  Todo,
   SavedLocation,
+  Todo,
 } from '../../src/lib/types';
 import {
+  formatDateLabel,
   getNowIdx,
   getStatus,
-  toDateString,
   isToday,
-  formatDateLabel,
+  toDateString,
 } from '../../src/lib/utils';
-import { getPrayers } from '../../src/services/prayers.service';
 import { getAthkar } from '../../src/services/athkar.service';
-import { useTodosStore } from '../../src/stores/todos.store';
+import { getPrayers } from '../../src/services/prayers.service';
 import { useAuthStore } from '../../src/stores/auth.store';
-import { getStored, STORAGE_KEYS } from '../../src/lib/storage';
-import { GeoBg } from '../../src/components/GeoBg';
-import { ProgressRing } from '../../src/components/ProgressRing';
-import { AthkarCard } from '../../src/components/AthkarCard';
-import { PrayerCard } from '../../src/components/PrayerCard';
-import { TodoItem } from '../../src/components/TodoItem';
-import { LoginButton } from '../../src/components/LoginButton';
-import { TimeRangePicker } from '../../src/components/TimeRangePicker';
-import { LocationModal } from '../../src/components/LocationModal';
+import { useTodosStore } from '../../src/stores/todos.store';
 import '../../src/styles/globals.css';
 import '../../src/styles/Page.css';
-import { LOGO_ICON } from 'public/icons/common';
 
 function getStoredLocation(): SavedLocation | null {
   return getStored<SavedLocation>(STORAGE_KEYS.location);
@@ -43,21 +43,21 @@ function getStoredLocation(): SavedLocation | null {
  */
 function snapPrayerTime(raw: string): string {
   const match = raw.match(/^(\d{1,2}):(\d{2})/);
-  if (!match) return "00:00";
+  if (!match) return '00:00';
   const h = parseInt(match[1], 10);
   const m = parseInt(match[2], 10);
   const snapped = Math.round((h * 60 + m) / 15) * 15;
   const sh = Math.floor(snapped / 60) % 24;
   const sm = snapped % 60;
-  return `${String(sh).padStart(2, "0")}:${String(sm).padStart(2, "0")}`;
+  return `${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}`;
 }
 
 /** "9:30 AM" from an HH:MM slot value */
 function slotLabel(hhmm: string): string {
-  const [h, m] = hhmm.split(":").map(Number);
-  const period = h < 12 ? "AM" : "PM";
+  const [h, m] = hhmm.split(':').map(Number);
+  const period = h < 12 ? 'AM' : 'PM';
   const hour = h % 12 || 12;
-  return `${hour}:${String(m).padStart(2, "0")} ${period}`;
+  return `${hour}:${String(m).padStart(2, '0')} ${period}`;
 }
 
 function Home() {
@@ -91,7 +91,7 @@ function Home() {
     return unsub;
   }, [initAuth]);
 
-  // Guard: when Firebase is configured and auth has resolved, redirect to /login if not signed in
+  // Guard: when Supabase is configured and auth has resolved, redirect to /login if not signed in
   useEffect(() => {
     if (configured && !authLoading && !user) {
       navigate('/login', { replace: true });
@@ -144,9 +144,7 @@ function Home() {
   // Window = from this prayer's time → next prayer's time.
   // Isha wraps past midnight back to Fajr.
   const nextPrayer =
-    prayers.length > 0
-      ? prayers[(selected + 1) % prayers.length]
-      : null;
+    prayers.length > 0 ? prayers[(selected + 1) % prayers.length] : null;
   const isIsha = prayer?.name === 'Isha';
   const timeMin = prayer ? snapPrayerTime(prayer.time) : '00:00';
   const timeMax = nextPrayer ? snapPrayerTime(nextPrayer.time) : '23:45';
@@ -184,7 +182,7 @@ function Home() {
   // Refetch todos when date OR auth user changes
   useEffect(() => {
     fetchTodos(selectedDate);
-  }, [fetchTodos, selectedDate, user?.uid]);
+  }, [fetchTodos, selectedDate, user?.id]);
 
   useEffect(() => {
     if (prayer) {
@@ -221,7 +219,10 @@ function Home() {
       <main className="page">
         <GeoBg />
         <div className="page__glow_empty" />
-        <div className="page__content" style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          className="page__content"
+          style={{ alignItems: 'center', justifyContent: 'center' }}
+        >
           <div className="page__empty-state">
             <div className="page__empty-state-icon">☽</div>
             <div className="page__empty-state-text">Loading…</div>
@@ -236,7 +237,10 @@ function Home() {
       <main className="page">
         <GeoBg />
         <div className="page__glow_empty" />
-        <div className="page__content" style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          className="page__content"
+          style={{ alignItems: 'center', justifyContent: 'center' }}
+        >
           <div className="page__empty-state">
             <div className="page__empty-state-icon">🕌</div>
             <div className="page__empty-state-text">Loading...</div>
@@ -261,7 +265,10 @@ function Home() {
       <main className="page">
         <GeoBg />
         <div className="page__glow_empty" />
-        <div className="page__content" style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          className="page__content"
+          style={{ alignItems: 'center', justifyContent: 'center' }}
+        >
           <div className="page__empty-state">
             <div className="page__empty-state-icon">🕌</div>
             <div className="page__empty-state-text">Loading prayer times…</div>
@@ -282,14 +289,19 @@ function Home() {
             <div>
               <span className="page__header-icon">{LOGO_ICON}</span>
               <div className="page__title">Istiqāmah</div>
-              <div className="page__subtitle">Track your day by prayer time</div>
+              <div className="page__subtitle">
+                Track your day by prayer time
+              </div>
             </div>
           </div>
           <div className="page__header-right">
             <div className="page__header-time-row">
               <div>
                 <div className="page__time">
-                  {now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                  {now.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </div>
                 <div className="page__date">
                   {now.toLocaleDateString('en-US', {
@@ -319,7 +331,9 @@ function Home() {
             <PrayerCard
               key={p.name}
               prayer={p}
-              doneCount={getTodosByPrayer(p.name).filter((t: Todo) => t.done).length}
+              doneCount={
+                getTodosByPrayer(p.name).filter((t: Todo) => t.done).length
+              }
               totalCount={getTodosByPrayer(p.name).length}
               isSelected={i === selected}
               isNow={i === nowIdx}
@@ -335,7 +349,6 @@ function Home() {
 
         {/* ── Main grid ── */}
         <div className="page__main-grid anim-fade-up-2">
-
           {/* Left panel */}
           <aside className="page__left-panel">
             <div className="page__left-panel-line" />
@@ -346,7 +359,9 @@ function Home() {
               <div className="page__prayer-meta">
                 <span className="page__prayer-time">{prayer.time}</span>
                 <div className="page__prayer-meta-divider" />
-                <span className="page__prayer-status">{getStatus(selected, nowIdx)}</span>
+                <span className="page__prayer-status">
+                  {getStatus(selected, nowIdx)}
+                </span>
               </div>
 
               <div className="page__stats-row">
@@ -361,7 +376,9 @@ function Home() {
                   ).map(([k, v, g]) => (
                     <div key={k} className="page__stats-row-item">
                       <span className="page__stats-label">{k}</span>
-                      <span className={`page__stats-value ${g ? 'page__stats-value--accent' : ''}`}>
+                      <span
+                        className={`page__stats-value ${g ? 'page__stats-value--accent' : ''}`}
+                      >
                         {v}
                       </span>
                     </div>
@@ -387,7 +404,9 @@ function Home() {
                   {prayer.arabic} · {prayer.time}
                 </div>
               </div>
-              <span className="page__right-badge">{pDone}/{pTotal} done</span>
+              <span className="page__right-badge">
+                {pDone}/{pTotal} done
+              </span>
             </div>
 
             {errorVisible && error && (
@@ -405,9 +424,25 @@ function Home() {
             )}
 
             <div className="page__date-nav">
-              <button type="button" className="page__date-nav-btn" onClick={goToPrevDay} aria-label="Previous day">‹</button>
-              <span className="page__date-nav-label">{formatDateLabel(selectedDate)}</span>
-              <button type="button" className="page__date-nav-btn" onClick={goToNextDay} aria-label="Next day">›</button>
+              <button
+                type="button"
+                className="page__date-nav-btn"
+                onClick={goToPrevDay}
+                aria-label="Previous day"
+              >
+                ‹
+              </button>
+              <span className="page__date-nav-label">
+                {formatDateLabel(selectedDate)}
+              </span>
+              <button
+                type="button"
+                className="page__date-nav-btn"
+                onClick={goToNextDay}
+                aria-label="Next day"
+              >
+                ›
+              </button>
             </div>
 
             <div className="page__filter-row">
@@ -423,18 +458,26 @@ function Home() {
               ))}
             </div>
 
-            {todosLoading && <div className="page__loading-bar" aria-hidden="true" />}
+            {todosLoading && (
+              <div className="page__loading-bar" aria-hidden="true" />
+            )}
 
-            <div className={`page__todo-list ${todosLoading && todos.length > 0 ? 'page__todo-list--loading' : ''}`}>
+            <div
+              className={`page__todo-list ${todosLoading && todos.length > 0 ? 'page__todo-list--loading' : ''}`}
+            >
               {todosLoading && todos.length === 0 ? (
                 <div className="page__empty-state">
                   <div className="page__empty-state-text">Loading tasks…</div>
                 </div>
               ) : filteredTodos.length === 0 ? (
                 <div className="page__empty-state">
-                  <div className="page__empty-state-icon">{filter === 'done' ? '✓' : '🌿'}</div>
+                  <div className="page__empty-state-icon">
+                    {filter === 'done' ? '✓' : '🌿'}
+                  </div>
                   <div className="page__empty-state-text">
-                    {filter === 'done' ? 'No completed tasks yet' : 'All clear — add a task below'}
+                    {filter === 'done'
+                      ? 'No completed tasks yet'
+                      : 'All clear — add a task below'}
                   </div>
                 </div>
               ) : (
@@ -446,7 +489,9 @@ function Home() {
                     onDelete={() => removeTodo(t.id)}
                     onUpdate={(text) => editTodo(t.id, text)}
                     onUpdateTime={(s, e) => updateTodoTime(t.id, s, e)}
-                    onCalendarSync={(eventId) => setCalendarEventId(t.id, eventId)}
+                    onCalendarSync={(eventId) =>
+                      setCalendarEventId(t.id, eventId)
+                    }
                     minTime={timeMin}
                     maxTime={timeMax}
                     wrapsMidnight={isIsha}
@@ -484,7 +529,11 @@ function Home() {
                     disabled={addLoading}
                     className={`page__add-btn ${addLoading ? 'page__add-btn--loading' : ''}`}
                   >
-                    {addLoading ? <span className="page__add-spinner" aria-hidden="true" /> : 'Add'}
+                    {addLoading ? (
+                      <span className="page__add-spinner" aria-hidden="true" />
+                    ) : (
+                      'Add'
+                    )}
                   </button>
                 )}
               </div>
@@ -494,7 +543,10 @@ function Home() {
                 <TimeRangePicker
                   startTime={addStart}
                   endTime={addEnd}
-                  onChange={(s, e) => { setAddStart(s); setAddEnd(e); }}
+                  onChange={(s, e) => {
+                    setAddStart(s);
+                    setAddEnd(e);
+                  }}
                   minTime={timeMin}
                   maxTime={timeMax}
                   wrapsMidnight={isIsha}
@@ -505,10 +557,15 @@ function Home() {
 
             <div className="page__day-progress">
               <span className="page__day-progress-label">
-                {isToday(selectedDate) ? 'Day progress' : `${formatDateLabel(selectedDate)} progress`}
+                {isToday(selectedDate)
+                  ? 'Day progress'
+                  : `${formatDateLabel(selectedDate)} progress`}
               </span>
               <div className="page__day-progress-track">
-                <div className="page__day-progress-fill" style={{ width: `${dayPct}%` }} />
+                <div
+                  className="page__day-progress-fill"
+                  style={{ width: `${dayPct}%` }}
+                />
               </div>
               <span className="page__day-progress-value">{dayPct}%</span>
             </div>

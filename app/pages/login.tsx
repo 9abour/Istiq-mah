@@ -54,17 +54,11 @@ const features = [
 ];
 
 const setupSteps = [
-  { n: '1', text: 'Go to console.firebase.google.com and create a project.' },
-  { n: '2', text: 'Enable Authentication → Google sign-in method.' },
-  { n: '3', text: 'Enable Firestore Database (start in production mode).' },
-  {
-    n: '4',
-    text: 'Copy your project config into a .env.local file at the project root.',
-  },
-  {
-    n: '5',
-    text: 'Restart the dev server — the auth flow will appear automatically.',
-  },
+  { n: '1', text: 'Go to supabase.com, create a project, and enable Google under Authentication → Providers.' },
+  { n: '2', text: 'In Google Cloud Console add your Supabase callback URL as an authorised redirect URI.' },
+  { n: '3', text: 'Copy your Supabase URL and publishable key into a .env.local file at the project root.' },
+  { n: '4', text: 'Run the todos table SQL from src/services/todos.service.ts in the Supabase SQL editor.' },
+  { n: '5', text: 'Restart the dev server — the auth flow will appear automatically.' },
 ];
 
 export default function LoginPage() {
@@ -90,7 +84,7 @@ export default function LoginPage() {
     if (!loading && user) navigate('/', { replace: true });
   }, [loading, user, navigate]);
 
-  // ── Loading ring while Firebase resolves auth ──
+  // ── Loading ring while Supabase resolves auth ──
   if (configured && loading) {
     return (
       <div className="lp">
@@ -179,9 +173,9 @@ export default function LoginPage() {
             </ul>
           </>
         ) : (
-          /* ── Firebase not configured → show setup guide ── */
+          /* ── Supabase not configured → show setup guide ── */
           <>
-            <div className="lp__setup-badge">Firebase not configured</div>
+            <div className="lp__setup-badge">Supabase not configured</div>
 
             <p className="lp__setup-intro">
               Follow these steps to enable Google sign-in and cloud sync:
@@ -198,12 +192,8 @@ export default function LoginPage() {
 
             <div className="lp__env-block">
               <div className="lp__env-label">.env.local</div>
-              <pre className="lp__env-pre">{`VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_STORAGE_BUCKET=...
-VITE_FIREBASE_MESSAGING_SENDER_ID=...
-VITE_FIREBASE_APP_ID=...`}</pre>
+              <pre className="lp__env-pre">{`VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...`}</pre>
             </div>
 
             <div className="lp__divider">

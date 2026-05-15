@@ -9,7 +9,7 @@ import {
 import { useAuthStore } from "./auth.store";
 
 function currentUserId(): string | null {
-  return useAuthStore.getState().user?.uid ?? null;
+  return useAuthStore.getState().user?.id ?? null;
 }
 
 type TodosState = {

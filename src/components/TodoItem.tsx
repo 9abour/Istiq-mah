@@ -1,20 +1,23 @@
-import { useState, useRef, useEffect } from "react";
-import type { Todo } from "../lib/types";
-import { useAuthStore } from "../stores/auth.store";
+import { useEffect, useRef, useState } from 'react';
+import type { Todo } from '../lib/types';
 import {
   createCalendarEvent,
-  updateCalendarEvent,
   deleteCalendarEvent,
-} from "../services/calendar.service";
-import { TimeRangePicker } from "./TimeRangePicker";
-import "./TodoItem.css";
+  updateCalendarEvent,
+} from '../services/calendar.service';
+import { useAuthStore } from '../stores/auth.store';
+import { TimeRangePicker } from './TimeRangePicker';
+import './TodoItem.css';
 
 type TodoItemProps = {
   todo: Todo;
   onToggle: () => void;
   onDelete: () => void;
   onUpdate: (text: string) => Promise<void>;
-  onUpdateTime: (startTime: string | undefined, endTime: string | undefined) => Promise<void>;
+  onUpdateTime: (
+    startTime: string | undefined,
+    endTime: string | undefined
+  ) => Promise<void>;
   onCalendarSync: (eventId: string | null) => Promise<void>;
   selectedDate: string;
   /** Prayer window bounds for the TimeRangePicker */
@@ -26,19 +29,57 @@ type TodoItemProps = {
 
 function CalendarIcon({ synced }: { synced: boolean }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <rect
-        x="1" y="2.5" width="12" height="10.5"
+        x="1"
+        y="2.5"
+        width="12"
+        height="10.5"
         rx="1.5"
-        stroke={synced ? "#4CAF8A" : "currentColor"}
+        stroke={synced ? '#4CAF8A' : 'currentColor'}
         strokeWidth="1.3"
-        fill={synced ? "rgba(76,175,138,0.15)" : "none"}
+        fill={synced ? 'rgba(76,175,138,0.15)' : 'none'}
       />
-      <line x1="1" y1="5.5" x2="13" y2="5.5" stroke={synced ? "#4CAF8A" : "currentColor"} strokeWidth="1.3" />
-      <line x1="4.5" y1="1" x2="4.5" y2="4" stroke={synced ? "#4CAF8A" : "currentColor"} strokeWidth="1.3" strokeLinecap="round" />
-      <line x1="9.5" y1="1" x2="9.5" y2="4" stroke={synced ? "#4CAF8A" : "currentColor"} strokeWidth="1.3" strokeLinecap="round" />
+      <line
+        x1="1"
+        y1="5.5"
+        x2="13"
+        y2="5.5"
+        stroke={synced ? '#4CAF8A' : 'currentColor'}
+        strokeWidth="1.3"
+      />
+      <line
+        x1="4.5"
+        y1="1"
+        x2="4.5"
+        y2="4"
+        stroke={synced ? '#4CAF8A' : 'currentColor'}
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+      <line
+        x1="9.5"
+        y1="1"
+        x2="9.5"
+        y2="4"
+        stroke={synced ? '#4CAF8A' : 'currentColor'}
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
       {synced && (
-        <path d="M4.5 8.5L6 10L9.5 7" stroke="#4CAF8A" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M4.5 8.5L6 10L9.5 7"
+          stroke="#4CAF8A"
+          strokeWidth="1.3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       )}
     </svg>
   );
@@ -139,7 +180,12 @@ export function TodoItem({
     if (isSynced && todo.calendarEventId && googleAccessToken) {
       try {
         const updated = { ...todo, text: trimmed };
-        await updateCalendarEvent(googleAccessToken, todo.calendarEventId, updated, selectedDate);
+        await updateCalendarEvent(
+          googleAccessToken,
+          todo.calendarEventId,
+          updated,
+          selectedDate
+        );
       } catch {
         // Calendar update is best-effort — don't surface to user
       }
@@ -147,8 +193,8 @@ export function TodoItem({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") confirmEdit(e);
-    else if (e.key === "Escape") cancelEdit(e);
+    if (e.key === 'Enter') confirmEdit(e);
+    else if (e.key === 'Escape') cancelEdit(e);
   };
 
   // ── Delete with calendar cleanup ────────────────────────────────────────────
@@ -183,15 +229,24 @@ export function TodoItem({
         if (googleAccessToken) {
           try {
             await deleteCalendarEvent(googleAccessToken, todo.calendarEventId);
-          } catch { /* best-effort */ }
+          } catch {
+            /* best-effort */
+          }
         }
         await onCalendarSync(null);
       } else if (googleAccessToken) {
         // Time was changed → patch the calendar event
         try {
           const updated = { ...todo, startTime: newStart, endTime: newEnd };
-          await updateCalendarEvent(googleAccessToken, todo.calendarEventId, updated, selectedDate);
-        } catch { /* best-effort */ }
+          await updateCalendarEvent(
+            googleAccessToken,
+            todo.calendarEventId,
+            updated,
+            selectedDate
+          );
+        } catch {
+          /* best-effort */
+        }
       }
     }
   };
@@ -213,13 +268,17 @@ export function TodoItem({
         await deleteCalendarEvent(googleAccessToken, todo.calendarEventId);
         await onCalendarSync(null);
       } else {
-        const eventId = await createCalendarEvent(googleAccessToken, todo, selectedDate);
+        const eventId = await createCalendarEvent(
+          googleAccessToken,
+          todo,
+          selectedDate
+        );
         await onCalendarSync(eventId);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Calendar error";
-      if (msg === "UNAUTHORIZED") {
-        setCalError("Session expired — please sign in again");
+      const msg = err instanceof Error ? err.message : 'Calendar error';
+      if (msg === 'UNAUTHORIZED') {
+        setCalError('Session expired — please sign in again');
         await signInWithGoogle().catch(() => {});
       } else {
         setCalError(msg);
@@ -232,7 +291,7 @@ export function TodoItem({
   return (
     <div
       onClick={editing ? undefined : handleToggle}
-      className={`todo-item group ${todo.done ? "todo-item--done" : ""} ${editing ? "todo-item--editing" : ""}`}
+      className={`todo-item group ${todo.done ? 'todo-item--done' : ''} ${editing ? 'todo-item--editing' : ''}`}
     >
       <div className="todo-item__checkbox">
         {todo.done && (
@@ -250,7 +309,10 @@ export function TodoItem({
 
       <div className="todo-item__body">
         {editing ? (
-          <div className="todo-item__edit-row" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="todo-item__edit-row"
+            onClick={(e) => e.stopPropagation()}
+          >
             <input
               ref={inputRef}
               className="todo-item__edit-input"
@@ -266,7 +328,13 @@ export function TodoItem({
               title="Save"
             >
               <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
-                <path d="M1 4.5L3.8 7.5L10 1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d="M1 4.5L3.8 7.5L10 1"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
             <button
@@ -276,7 +344,12 @@ export function TodoItem({
               title="Cancel"
             >
               <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-                <path d="M1 1L8 8M8 1L1 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                <path
+                  d="M1 1L8 8M8 1L1 8"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
               </svg>
             </button>
           </div>
@@ -301,21 +374,23 @@ export function TodoItem({
               type="button"
               onClick={handleCalendarToggle}
               disabled={calLoading}
-              className={`todo-item__cal-btn ${isSynced ? "todo-item__cal-btn--synced" : ""}`}
-              title={isSynced ? "Remove from Google Calendar" : "Add to Google Calendar"}
+              className={`todo-item__cal-btn ${isSynced ? 'todo-item__cal-btn--synced' : ''}`}
+              title={
+                isSynced
+                  ? 'Remove from Google Calendar'
+                  : 'Add to Google Calendar'
+              }
             >
               {calLoading ? (
                 <span className="todo-item__cal-spinner" />
               ) : (
                 <CalendarIcon synced={isSynced} />
               )}
-              <span>{isSynced ? "Synced" : "Add to Cal"}</span>
+              <span>{isSynced ? 'Synced' : 'Add to Cal'}</span>
             </button>
           )}
 
-          {calError && (
-            <span className="todo-item__cal-error">{calError}</span>
-          )}
+          {calError && <span className="todo-item__cal-error">{calError}</span>}
         </div>
       </div>
 
@@ -342,7 +417,13 @@ export function TodoItem({
               <span className="todo-item__cal-spinner" />
             ) : (
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                <path d="M1.5 3H9.5M4 3V2H7V3M4.5 5V8.5M6.5 5V8.5M2.5 3L3 9.5H8L8.5 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d="M1.5 3H9.5M4 3V2H7V3M4.5 5V8.5M6.5 5V8.5M2.5 3L3 9.5H8L8.5 3"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             )}
           </button>
