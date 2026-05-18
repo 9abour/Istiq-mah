@@ -1,20 +1,47 @@
-import type { Todo } from "../lib/types";
+import type { Todo } from '../lib/types';
+import { googleApi } from './google-api';
 
-const CALENDAR_API = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
+const GCAL_EVENTS = '/calendar/v3/calendars/primary/events';
+
+// ── Event builder ─────────────────────────────────────────────────────────────
+
+type CalendarEvent = {
+  summary: string;
+  colorId: string;
+  description: string;
+  start: { dateTime: string; timeZone: string } | { date: string };
+  end: { dateTime: string; timeZone: string } | { date: string };
+  reminders: {
+    useDefault: boolean;
+    overrides?: { method: string; minutes: number }[];
+  };
+};
 
 /**
  * @param overrideDone  When provided, uses this value instead of todo.done.
  *                      Needed right after an optimistic toggle before the
  *                      component re-renders with the new state.
  */
-function buildEvent(todo: Todo, date: string, overrideDone?: boolean) {
+function buildEvent(
+  todo: Todo,
+  date: string,
+  overrideDone?: boolean
+): CalendarEvent {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const hasTime = todo.startTime && todo.endTime;
+  const hasTime = Boolean(todo.startTime && todo.endTime);
   const isDone = overrideDone !== undefined ? overrideDone : todo.done;
 
-  // ✓ prefix + Sage green when complete; plain title + default color otherwise.
-  const summary = isDone ? `✓ ${todo.text}` : todo.text;
-  const colorId = isDone ? "2" : "0"; // "2" = Sage, "0" = calendar default
+  // Detect overdue: past date and not done
+  const today = new Date().toISOString().slice(0, 10);
+  const isOverdue = !isDone && date < today;
+
+  // ✓ done (Sage green), ✗ overdue not-done (Tomato red), plain otherwise
+  const summary = isDone
+    ? `✓ ${todo.text}`
+    : isOverdue
+      ? `✗ ${todo.text}`
+      : todo.text;
+  const colorId = isDone ? '2' : isOverdue ? '11' : '0';
 
   const base = {
     summary,
@@ -29,7 +56,7 @@ function buildEvent(todo: Todo, date: string, overrideDone?: boolean) {
       end: { dateTime: `${date}T${todo.endTime}:00`, timeZone: tz },
       reminders: {
         useDefault: false,
-        overrides: [{ method: "popup", minutes: 10 }],
+        overrides: [{ method: 'popup', minutes: 10 }],
       },
     };
   }
@@ -42,68 +69,32 @@ function buildEvent(todo: Todo, date: string, overrideDone?: boolean) {
   };
 }
 
+// ── Public API ────────────────────────────────────────────────────────────────
+// Note: access tokens are managed internally by googleApi — no token params needed.
+
 export async function createCalendarEvent(
-  accessToken: string,
   todo: Todo,
   date: string
 ): Promise<string> {
-  const res = await fetch(CALENDAR_API, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(buildEvent(todo, date)),
-  });
-
-  if (res.status === 401) throw new Error("UNAUTHORIZED");
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message ?? "Failed to create calendar event");
-  }
-
-  const data = await res.json();
-  return data.id as string;
+  const data = await googleApi.post<{ id: string }>(
+    GCAL_EVENTS,
+    buildEvent(todo, date)
+  );
+  return data.id;
 }
 
 export async function updateCalendarEvent(
-  accessToken: string,
   eventId: string,
   todo: Todo,
   date: string,
   overrideDone?: boolean
 ): Promise<void> {
-  const res = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
-    {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(buildEvent(todo, date, overrideDone)),
-    }
+  await googleApi.patch(
+    `${GCAL_EVENTS}/${eventId}`,
+    buildEvent(todo, date, overrideDone)
   );
-  if (res.status === 401) throw new Error("UNAUTHORIZED");
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message ?? "Failed to update calendar event");
-  }
 }
 
-export async function deleteCalendarEvent(
-  accessToken: string,
-  eventId: string
-): Promise<void> {
-  const res = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
-    {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${accessToken}` },
-    }
-  );
-  if (res.status === 401) throw new Error("UNAUTHORIZED");
-  if (!res.ok && res.status !== 404) {
-    throw new Error("Failed to delete calendar event");
-  }
+export async function deleteCalendarEvent(eventId: string): Promise<void> {
+  await googleApi.delete(`${GCAL_EVENTS}/${eventId}`);
 }

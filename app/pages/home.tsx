@@ -11,7 +11,7 @@ import { PrayerCard } from '../../src/components/PrayerCard';
 import { ProgressRing } from '../../src/components/ProgressRing';
 import { TimeRangePicker } from '../../src/components/TimeRangePicker';
 import { TodoItem } from '../../src/components/TodoItem';
-import { getStored, STORAGE_KEYS } from '../../src/lib/storage';
+import { getStored, setStored, STORAGE_KEYS } from '../../src/lib/storage';
 import type {
   Athkar,
   Filter,
@@ -26,6 +26,9 @@ import {
   isToday,
   toDateString,
 } from '../../src/lib/utils';
+import {
+  createCalendarEvent,
+} from '../../src/services/calendar.service';
 import { getAthkar } from '../../src/services/athkar.service';
 import { getPrayers } from '../../src/services/prayers.service';
 import { useAuthStore } from '../../src/stores/auth.store';
@@ -82,10 +85,15 @@ function Home() {
   const [errorVisible, setErrorVisible] = useState(false);
   const addRef = useRef<HTMLInputElement>(null);
 
+  const [autoCalSync, setAutoCalSync] = useState<boolean>(
+    () => getStored<boolean>(STORAGE_KEYS.autoCalSync) ?? false
+  );
+
   const navigate = useNavigate();
 
   // Auth
-  const { user, loading: authLoading, configured, initAuth } = useAuthStore();
+  const { user, loading: authLoading, configured, initAuth, googleAccessToken, signInWithGoogle } = useAuthStore();
+  // googleAccessToken kept for the auto-sync guard (we still need to know if signed in)
   useEffect(() => {
     const unsub = initAuth();
     return unsub;
@@ -200,12 +208,33 @@ function Home() {
   const handleAdd = async () => {
     if (!prayer || !addText.trim() || addLoading) return;
     setAddLoading(true);
-    await addTodo(selectedDate, prayer.name, addText, addStart, addEnd);
+    const newTodo = await addTodo(selectedDate, prayer.name, addText, addStart, addEnd);
     setAddLoading(false);
     setAddText('');
+
+    // Auto-sync: create a Google Calendar event if toggle is on and time is set
+    if (autoCalSync && addStart && addEnd && newTodo) {
+      try {
+        const eventId = await createCalendarEvent(newTodo, selectedDate);
+        await setCalendarEventId(newTodo.id, eventId);
+      } catch {
+        // Best-effort — don't block the add flow
+      }
+    }
+
     setAddStart(undefined);
     setAddEnd(undefined);
     addRef.current?.focus();
+  };
+
+  const handleAutoCalSyncToggle = () => {
+    const next = !autoCalSync;
+    setAutoCalSync(next);
+    setStored(STORAGE_KEYS.autoCalSync, next);
+    // Prompt sign-in if toggling on without a token
+    if (next && !googleAccessToken) {
+      signInWithGoogle().catch(() => {});
+    }
   };
 
   const handleLocationConfirm = (newLocation: SavedLocation) => {
@@ -404,9 +433,29 @@ function Home() {
                   {prayer.arabic} · {prayer.time}
                 </div>
               </div>
-              <span className="page__right-badge">
-                {pDone}/{pTotal} done
-              </span>
+              <div className="page__right-header-actions">
+                <button
+                  type="button"
+                  className={`page__auto-sync-btn ${autoCalSync ? 'page__auto-sync-btn--on' : ''}`}
+                  onClick={handleAutoCalSyncToggle}
+                  title={autoCalSync ? 'Auto-sync to Google Calendar: ON' : 'Auto-sync to Google Calendar: OFF'}
+                >
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1" y="2.5" width="12" height="10.5" rx="1.5" stroke="currentColor" strokeWidth="1.3" fill={autoCalSync ? 'rgba(76,175,138,0.15)' : 'none'} />
+                    <line x1="1" y1="5.5" x2="13" y2="5.5" stroke="currentColor" strokeWidth="1.3" />
+                    <line x1="4.5" y1="1" x2="4.5" y2="4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                    <line x1="9.5" y1="1" x2="9.5" y2="4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                    {autoCalSync && <path d="M4.5 8.5L6 10L9.5 7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />}
+                  </svg>
+                  <span>Auto-sync</span>
+                  <span className={`page__auto-sync-pill ${autoCalSync ? 'page__auto-sync-pill--on' : ''}`}>
+                    {autoCalSync ? 'ON' : 'OFF'}
+                  </span>
+                </button>
+                <span className="page__right-badge">
+                  {pDone}/{pTotal} done
+                </span>
+              </div>
             </div>
 
             {errorVisible && error && (

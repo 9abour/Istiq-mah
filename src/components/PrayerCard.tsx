@@ -1,6 +1,5 @@
-import React from "react";
-import type { Prayer } from "../lib/types";
-import "./PrayerCard.css";
+import type { Prayer } from '../lib/types';
+import './PrayerCard.css';
 
 type PrayerCardProps = {
   prayer: Prayer;
@@ -24,7 +23,7 @@ export function PrayerCard({
   return (
     <div
       onClick={onClick}
-      className={`prayer-card ${isSelected ? "prayer-card--selected" : ""}`}
+      className={`prayer-card ${isSelected ? 'prayer-card--selected' : ''}`}
     >
       <div className="prayer-card__glow" />
       {isNow && <div className="prayer-card__now-dot" />}

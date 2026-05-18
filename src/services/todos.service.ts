@@ -14,8 +14,12 @@
  *     start_time       text,
  *     end_time         text,
  *     calendar_event_id text,
+ *     logged_time      integer not null default 0,
  *     created_at       timestamptz default now()
  *   );
+ *
+ *   -- Migration for existing tables:
+ *   alter table public.todos add column if not exists logged_time integer not null default 0;
  *
  *   alter table public.todos enable row level security;
  *
@@ -60,6 +64,7 @@ type DbRow = {
   start_time?: string | null;
   end_time?: string | null;
   calendar_event_id?: string | null;
+  logged_time?: number | null;
 };
 
 function fromRow(row: DbRow): Todo {
@@ -72,6 +77,7 @@ function fromRow(row: DbRow): Todo {
     startTime: row.start_time ?? undefined,
     endTime: row.end_time ?? undefined,
     calendarEventId: row.calendar_event_id ?? undefined,
+    loggedTime: row.logged_time ?? 0,
   };
 }
 
@@ -136,7 +142,7 @@ export async function createTodo(
 export async function updateTodo(
   id: string,
   patch: Partial<
-    Pick<Todo, 'text' | 'done' | 'calendarEventId' | 'startTime' | 'endTime'>
+    Pick<Todo, 'text' | 'done' | 'calendarEventId' | 'startTime' | 'endTime' | 'loggedTime'>
   >,
   userId?: string | null
 ): Promise<Todo> {
@@ -149,6 +155,7 @@ export async function updateTodo(
       dbPatch.calendar_event_id = patch.calendarEventId ?? null;
     if ('startTime' in patch) dbPatch.start_time = patch.startTime ?? null;
     if ('endTime' in patch) dbPatch.end_time = patch.endTime ?? null;
+    if ('loggedTime' in patch) dbPatch.logged_time = patch.loggedTime ?? 0;
 
     const { error } = await supabase
       .from('todos')

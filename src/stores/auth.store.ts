@@ -1,11 +1,21 @@
 import type { User } from '@supabase/supabase-js';
 import { create } from 'zustand';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
+// Imported lazily to avoid circular dep — only used as a side-effect call
+let _setApiRefreshToken: ((t: string) => void) | null = null;
+async function notifyApiClient(token: string) {
+  if (!_setApiRefreshToken) {
+    const mod = await import('../services/google-api');
+    _setApiRefreshToken = mod.googleApi.setRefreshToken.bind(mod.googleApi);
+  }
+  _setApiRefreshToken(token);
+}
 
 const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar';
 
 const TOKEN_KEY = 'istiqamah_gtoken';
 const TOKEN_EXPIRY_KEY = 'istiqamah_gtoken_exp';
+const REFRESH_TOKEN_KEY = 'istiqamah_grefresh';
 // Refresh slightly before the real 3600-second Google expiry
 const TOKEN_TTL_MS = 55 * 60 * 1000;
 
@@ -30,6 +40,17 @@ function clearStoredToken() {
   if (typeof localStorage === 'undefined') return;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(TOKEN_EXPIRY_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
+
+export function readStoredRefreshToken(): string | null {
+  if (typeof localStorage === 'undefined') return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+}
+
+export function saveStoredRefreshToken(token: string) {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem(REFRESH_TOKEN_KEY, token);
 }
 
 interface AuthState {
@@ -43,6 +64,8 @@ interface AuthState {
   signOutUser: () => Promise<void>;
   clearAuthError: () => void;
   initAuth: () => () => void;
+  /** Called by the Google API client after a silent token refresh succeeds */
+  setGoogleToken: (token: string) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -90,6 +113,11 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   clearAuthError: () => set({ authError: null }),
 
+  setGoogleToken: (token) => {
+    saveStoredToken(token);
+    set({ googleAccessToken: token });
+  },
+
   initAuth: () => {
     if (!supabase) {
       set({ loading: false });
@@ -99,6 +127,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     // Hydrate from the persisted session immediately
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.provider_token) saveStoredToken(session.provider_token);
+      if (session?.provider_refresh_token) {
+        saveStoredRefreshToken(session.provider_refresh_token);
+        notifyApiClient(session.provider_refresh_token);
+      }
       set({
         user: session?.user ?? null,
         loading: false,
@@ -110,6 +142,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.provider_token) saveStoredToken(session.provider_token);
+      if (session?.provider_refresh_token) {
+        saveStoredRefreshToken(session.provider_refresh_token);
+        notifyApiClient(session.provider_refresh_token);
+      }
       if (!session) clearStoredToken();
       set({
         user: session?.user ?? null,

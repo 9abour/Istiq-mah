@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   prayers: PREFIX + "prayers",
   location: PREFIX + "location",
   athkar: (prayerName: string) => PREFIX + "athkar_" + prayerName,
+  autoCalSync: PREFIX + "auto_cal_sync",
 } as const;
 
 export function getStored<T>(key: string): T | null {

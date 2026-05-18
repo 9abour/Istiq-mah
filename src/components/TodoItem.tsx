@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Todo } from '../lib/types';
 import {
   createCalendarEvent,
   deleteCalendarEvent,
   updateCalendarEvent,
 } from '../services/calendar.service';
-import { useAuthStore } from '../stores/auth.store';
+import { useTodosStore } from '../stores/todos.store';
 import { TimeRangePicker } from './TimeRangePicker';
 import './TodoItem.css';
 
@@ -99,6 +99,16 @@ function PencilIcon() {
   );
 }
 
+function formatElapsed(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  if (h > 0) {
+    return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
 export function TodoItem({
   todo,
   onToggle,
@@ -112,13 +122,88 @@ export function TodoItem({
   wrapsMidnight,
   contextLabel,
 }: TodoItemProps) {
-  const { user, googleAccessToken, signInWithGoogle } = useAuthStore();
+  const { updateTodoLoggedTime } = useTodosStore();
 
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(todo.text);
   const [calLoading, setCalLoading] = useState(false);
   const [calError, setCalError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // ── Timer state ─────────────────────────────────────────────────────────────
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [displayedSeconds, setDisplayedSeconds] = useState(todo.loggedTime ?? 0);
+  // How many seconds were saved before the current running session
+  const savedSecondsRef = useRef(todo.loggedTime ?? 0);
+  // Timestamp (ms) when the current running session started
+  const sessionStartRef = useRef<number | null>(null);
+
+  // Keep savedSecondsRef in sync if the todo prop updates (e.g. from DB refresh)
+  useEffect(() => {
+    if (!timerRunning) {
+      savedSecondsRef.current = todo.loggedTime ?? 0;
+      setDisplayedSeconds(todo.loggedTime ?? 0);
+    }
+  }, [todo.loggedTime, timerRunning]);
+
+  const getCurrentTotal = useCallback((): number => {
+    if (sessionStartRef.current === null) return savedSecondsRef.current;
+    const sessionSecs = (Date.now() - sessionStartRef.current) / 1000;
+    return savedSecondsRef.current + sessionSecs;
+  }, []);
+
+  const stopAndSave = useCallback(async () => {
+    if (!timerRunning) return;
+    const total = Math.round(getCurrentTotal());
+    setTimerRunning(false);
+    sessionStartRef.current = null;
+    savedSecondsRef.current = total;
+    setDisplayedSeconds(total);
+    await updateTodoLoggedTime(todo.id, total);
+  }, [timerRunning, getCurrentTotal, updateTodoLoggedTime, todo.id]);
+
+  // Tick every second while running
+  useEffect(() => {
+    if (!timerRunning) return;
+    const interval = setInterval(() => {
+      setDisplayedSeconds(Math.floor(getCurrentTotal()));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timerRunning, getCurrentTotal]);
+
+  // Stop timer when page is hidden / tab is closed
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && timerRunning) {
+        stopAndSave();
+      }
+    };
+    const handleBeforeUnload = () => {
+      if (timerRunning) {
+        const total = Math.round(getCurrentTotal());
+        // Best-effort synchronous save for localStorage fallback
+        updateTodoLoggedTime(todo.id, total);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [timerRunning, stopAndSave, getCurrentTotal, updateTodoLoggedTime, todo.id]);
+
+  const handleTimerToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (timerRunning) {
+      stopAndSave();
+    } else {
+      sessionStartRef.current = Date.now();
+      setTimerRunning(true);
+    }
+  };
+
+  // ── Edit helpers ────────────────────────────────────────────────────────────
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -131,29 +216,21 @@ export function TodoItem({
   }, [editing, todo.text]);
 
   const isSynced = Boolean(todo.calendarEventId);
-  const canSync = Boolean(user && todo.startTime && todo.endTime);
+  const canSync = Boolean(todo.startTime && todo.endTime);
 
   // ── Toggle with calendar status sync ────────────────────────────────────────
 
   const handleToggle = async () => {
     const newDone = !todo.done;
-    onToggle(); // optimistic store update — sync, no await needed
-    if (isSynced && todo.calendarEventId && googleAccessToken) {
+    onToggle();
+    if (isSynced && todo.calendarEventId) {
       try {
-        await updateCalendarEvent(
-          googleAccessToken,
-          todo.calendarEventId,
-          todo,
-          selectedDate,
-          newDone
-        );
+        await updateCalendarEvent(todo.calendarEventId, todo, selectedDate, newDone);
       } catch {
-        // Best-effort — local state already toggled
+        // Best-effort
       }
     }
   };
-
-  // ── Edit helpers ────────────────────────────────────────────────────────────
 
   const startEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -176,18 +253,11 @@ export function TodoItem({
     setEditing(false);
     await onUpdate(trimmed);
 
-    // If synced, also patch the Calendar event with the new title
-    if (isSynced && todo.calendarEventId && googleAccessToken) {
+    if (isSynced && todo.calendarEventId) {
       try {
-        const updated = { ...todo, text: trimmed };
-        await updateCalendarEvent(
-          googleAccessToken,
-          todo.calendarEventId,
-          updated,
-          selectedDate
-        );
+        await updateCalendarEvent(todo.calendarEventId, { ...todo, text: trimmed }, selectedDate);
       } catch {
-        // Calendar update is best-effort — don't surface to user
+        // Best-effort
       }
     }
   };
@@ -202,16 +272,14 @@ export function TodoItem({
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setDeleteLoading(true);
-    // Remove the calendar event first so it doesn't become orphaned
-    if (isSynced && todo.calendarEventId && googleAccessToken) {
+    if (isSynced && todo.calendarEventId) {
       try {
-        await deleteCalendarEvent(googleAccessToken, todo.calendarEventId);
+        await deleteCalendarEvent(todo.calendarEventId);
       } catch {
-        // Best-effort — proceed with local deletion regardless
+        // Best-effort
       }
     }
     onDelete();
-    // No need to setDeleteLoading(false) — the component unmounts after delete
   };
 
   // ── Time range update (with calendar event sync) ────────────────────────────
@@ -222,26 +290,19 @@ export function TodoItem({
   ) => {
     await onUpdateTime(newStart, newEnd);
 
-    // Keep calendar in sync
     if (isSynced && todo.calendarEventId) {
       if (!newStart || !newEnd) {
-        // Time was removed → delete the orphaned calendar event
-        if (googleAccessToken) {
-          try {
-            await deleteCalendarEvent(googleAccessToken, todo.calendarEventId);
-          } catch {
-            /* best-effort */
-          }
+        try {
+          await deleteCalendarEvent(todo.calendarEventId);
+        } catch {
+          /* best-effort */
         }
         await onCalendarSync(null);
-      } else if (googleAccessToken) {
-        // Time was changed → patch the calendar event
+      } else {
         try {
-          const updated = { ...todo, startTime: newStart, endTime: newEnd };
           await updateCalendarEvent(
-            googleAccessToken,
             todo.calendarEventId,
-            updated,
+            { ...todo, startTime: newStart, endTime: newEnd },
             selectedDate
           );
         } catch {
@@ -256,33 +317,17 @@ export function TodoItem({
   const handleCalendarToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setCalError(null);
-
-    if (!user || !googleAccessToken) {
-      await signInWithGoogle().catch(() => {});
-      return;
-    }
-
     setCalLoading(true);
     try {
       if (isSynced && todo.calendarEventId) {
-        await deleteCalendarEvent(googleAccessToken, todo.calendarEventId);
+        await deleteCalendarEvent(todo.calendarEventId);
         await onCalendarSync(null);
       } else {
-        const eventId = await createCalendarEvent(
-          googleAccessToken,
-          todo,
-          selectedDate
-        );
+        const eventId = await createCalendarEvent(todo, selectedDate);
         await onCalendarSync(eventId);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Calendar error';
-      if (msg === 'UNAUTHORIZED') {
-        setCalError('Session expired — please sign in again');
-        await signInWithGoogle().catch(() => {});
-      } else {
-        setCalError(msg);
-      }
+      setCalError(err instanceof Error ? err.message : 'Calendar error');
     } finally {
       setCalLoading(false);
     }
@@ -358,6 +403,28 @@ export function TodoItem({
         )}
 
         <div className="todo-item__meta" onClick={(e) => e.stopPropagation()}>
+          {/* Timer */}
+          <button
+            type="button"
+            className={`todo-item__timer-btn ${timerRunning ? 'todo-item__timer-btn--running' : ''}`}
+            onClick={handleTimerToggle}
+            title={timerRunning ? 'Stop timer' : 'Start timer'}
+          >
+            {timerRunning ? (
+              <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                <rect x="1" y="1" width="2.5" height="7" rx="0.5" fill="currentColor" />
+                <rect x="5.5" y="1" width="2.5" height="7" rx="0.5" fill="currentColor" />
+              </svg>
+            ) : (
+              <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                <path d="M1.5 1L8 4.5L1.5 8V1Z" fill="currentColor" />
+              </svg>
+            )}
+            <span className={`todo-item__timer-display ${displayedSeconds > 0 ? 'todo-item__timer-display--active' : ''}`}>
+              {formatElapsed(displayedSeconds)}
+            </span>
+          </button>
+
           {/* Time range — click to edit in the Google Calendar modal */}
           <TimeRangePicker
             startTime={todo.startTime}

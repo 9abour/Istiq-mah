@@ -13,6 +13,8 @@ export type Todo = {
   endTime?: string;
   /** Google Calendar event ID when synced */
   calendarEventId?: string;
+  /** Total logged time in seconds */
+  loggedTime?: number;
 };
 
 export type PrayerName = "Fajr" | "Dhuhr" | "Asr" | "Maghrib" | "Isha";

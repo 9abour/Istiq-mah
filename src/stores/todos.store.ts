@@ -23,10 +23,11 @@ type TodosState = {
     text: string,
     startTime?: string,
     endTime?: string
-  ) => Promise<void>;
+  ) => Promise<Todo | null>;
   toggleTodo: (id: string) => Promise<void>;
   editTodo: (id: string, text: string) => Promise<void>;
   updateTodoTime: (id: string, startTime: string | undefined, endTime: string | undefined) => Promise<void>;
+  updateTodoLoggedTime: (id: string, seconds: number) => Promise<void>;
   removeTodo: (id: string) => Promise<void>;
   setCalendarEventId: (id: string, eventId: string | null) => Promise<void>;
   getTodosByPrayer: (prayerName: PrayerName) => Todo[];
@@ -48,13 +49,15 @@ export const useTodosStore = create<TodosState>((set, get) => ({
   },
 
   addTodo: async (date, prayerName, text, startTime, endTime) => {
-    if (!text.trim()) return;
+    if (!text.trim()) return null;
     set({ error: null });
     try {
       const todo = await createTodoApi(date, prayerName, text, startTime, endTime, currentUserId());
       set((s) => ({ todos: [...s.todos, todo] }));
+      return todo;
     } catch (e) {
       set({ error: e instanceof Error ? e.message : "Failed to add todo" });
+      return null;
     }
   },
 
@@ -102,6 +105,17 @@ export const useTodosStore = create<TodosState>((set, get) => ({
     } catch (e) {
       set((s) => ({ todos: s.todos.map((t) => (t.id === id ? todo : t)) }));
       set({ error: e instanceof Error ? e.message : "Failed to update time" });
+    }
+  },
+
+  updateTodoLoggedTime: async (id, seconds) => {
+    set((s) => ({
+      todos: s.todos.map((t) => (t.id === id ? { ...t, loggedTime: seconds } : t)),
+    }));
+    try {
+      await updateTodoApi(id, { loggedTime: seconds }, currentUserId());
+    } catch (e) {
+      set({ error: e instanceof Error ? e.message : "Failed to save timer" });
     }
   },
 
