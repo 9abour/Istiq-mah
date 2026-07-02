@@ -19,6 +19,7 @@ type TodoItemProps = {
     endTime: string | undefined
   ) => Promise<void>;
   onCalendarSync: (eventId: string | null) => Promise<void>;
+  onMarkFailed: () => void;
   selectedDate: string;
   /** Prayer window bounds for the TimeRangePicker */
   minTime?: string;
@@ -116,13 +117,14 @@ export function TodoItem({
   onUpdate,
   onUpdateTime,
   onCalendarSync,
+  onMarkFailed,
   selectedDate,
   minTime,
   maxTime,
   wrapsMidnight,
   contextLabel,
 }: TodoItemProps) {
-  const { updateTodoLoggedTime } = useTodosStore();
+  const { updateTodoLoggedTime, updateTodoTimerStartedAt } = useTodosStore();
 
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(todo.text);
@@ -132,11 +134,23 @@ export function TodoItem({
 
   // ── Timer state ─────────────────────────────────────────────────────────────
   const [timerRunning, setTimerRunning] = useState(false);
-  const [displayedSeconds, setDisplayedSeconds] = useState(todo.loggedTime ?? 0);
+  const [displayedSeconds, setDisplayedSeconds] = useState(
+    todo.loggedTime ?? 0
+  );
   // How many seconds were saved before the current running session
   const savedSecondsRef = useRef(todo.loggedTime ?? 0);
   // Timestamp (ms) when the current running session started
   const sessionStartRef = useRef<number | null>(null);
+
+  // Initialize timer state from todo.timerStartedAt if it exists (persistent timer)
+  useEffect(() => {
+    if (todo.timerStartedAt && !timerRunning) {
+      // Timer was running when app was closed, resume it
+      sessionStartRef.current = todo.timerStartedAt;
+      setTimerRunning(true);
+      savedSecondsRef.current = todo.loggedTime ?? 0;
+    }
+  }, [todo.timerStartedAt]);
 
   // Keep savedSecondsRef in sync if the todo prop updates (e.g. from DB refresh)
   useEffect(() => {
@@ -160,7 +174,14 @@ export function TodoItem({
     savedSecondsRef.current = total;
     setDisplayedSeconds(total);
     await updateTodoLoggedTime(todo.id, total);
-  }, [timerRunning, getCurrentTotal, updateTodoLoggedTime, todo.id]);
+    await updateTodoTimerStartedAt(todo.id, null);
+  }, [
+    timerRunning,
+    getCurrentTotal,
+    updateTodoLoggedTime,
+    updateTodoTimerStartedAt,
+    todo.id,
+  ]);
 
   // Tick every second while running
   useEffect(() => {
@@ -175,14 +196,19 @@ export function TodoItem({
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && timerRunning) {
-        stopAndSave();
+        // Don't stop timer on visibility change - let it persist
+        // Just save the current state
+        const total = Math.round(getCurrentTotal());
+        updateTodoLoggedTime(todo.id, total);
+        updateTodoTimerStartedAt(todo.id, sessionStartRef.current);
       }
     };
     const handleBeforeUnload = () => {
       if (timerRunning) {
         const total = Math.round(getCurrentTotal());
-        // Best-effort synchronous save for localStorage fallback
+        // Save timer state before unload
         updateTodoLoggedTime(todo.id, total);
+        updateTodoTimerStartedAt(todo.id, sessionStartRef.current);
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -191,15 +217,23 @@ export function TodoItem({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [timerRunning, stopAndSave, getCurrentTotal, updateTodoLoggedTime, todo.id]);
+  }, [
+    timerRunning,
+    getCurrentTotal,
+    updateTodoLoggedTime,
+    updateTodoTimerStartedAt,
+    todo.id,
+  ]);
 
   const handleTimerToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (timerRunning) {
       stopAndSave();
     } else {
-      sessionStartRef.current = Date.now();
+      const startTime = Date.now();
+      sessionStartRef.current = startTime;
       setTimerRunning(true);
+      updateTodoTimerStartedAt(todo.id, startTime);
     }
   };
 
@@ -225,7 +259,12 @@ export function TodoItem({
     onToggle();
     if (isSynced && todo.calendarEventId) {
       try {
-        await updateCalendarEvent(todo.calendarEventId, todo, selectedDate, newDone);
+        await updateCalendarEvent(
+          todo.calendarEventId,
+          todo,
+          selectedDate,
+          newDone
+        );
       } catch {
         // Best-effort
       }
@@ -255,7 +294,11 @@ export function TodoItem({
 
     if (isSynced && todo.calendarEventId) {
       try {
-        await updateCalendarEvent(todo.calendarEventId, { ...todo, text: trimmed }, selectedDate);
+        await updateCalendarEvent(
+          todo.calendarEventId,
+          { ...todo, text: trimmed },
+          selectedDate
+        );
       } catch {
         // Best-effort
       }
@@ -336,7 +379,7 @@ export function TodoItem({
   return (
     <div
       onClick={editing ? undefined : handleToggle}
-      className={`todo-item group ${todo.done ? 'todo-item--done' : ''} ${editing ? 'todo-item--editing' : ''}`}
+      className={`todo-item group ${todo.done ? 'todo-item--done' : ''} ${todo.failed ? 'todo-item--failed' : ''} ${editing ? 'todo-item--editing' : ''}`}
     >
       <div className="todo-item__checkbox">
         {todo.done && (
@@ -344,6 +387,17 @@ export function TodoItem({
             <path
               d="M1 4L3.5 6.5L9 1"
               stroke="#090f10"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
+        {todo.failed && (
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path
+              d="M1 1L9 9M9 1L1 9"
+              stroke="#dc2626"
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -412,15 +466,31 @@ export function TodoItem({
           >
             {timerRunning ? (
               <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-                <rect x="1" y="1" width="2.5" height="7" rx="0.5" fill="currentColor" />
-                <rect x="5.5" y="1" width="2.5" height="7" rx="0.5" fill="currentColor" />
+                <rect
+                  x="1"
+                  y="1"
+                  width="2.5"
+                  height="7"
+                  rx="0.5"
+                  fill="currentColor"
+                />
+                <rect
+                  x="5.5"
+                  y="1"
+                  width="2.5"
+                  height="7"
+                  rx="0.5"
+                  fill="currentColor"
+                />
               </svg>
             ) : (
               <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
                 <path d="M1.5 1L8 4.5L1.5 8V1Z" fill="currentColor" />
               </svg>
             )}
-            <span className={`todo-item__timer-display ${displayedSeconds > 0 ? 'todo-item__timer-display--active' : ''}`}>
+            <span
+              className={`todo-item__timer-display ${displayedSeconds > 0 ? 'todo-item__timer-display--active' : ''}`}
+            >
               {formatElapsed(displayedSeconds)}
             </span>
           </button>
@@ -471,6 +541,26 @@ export function TodoItem({
             title="Edit"
           >
             <PencilIcon />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onMarkFailed();
+            }}
+            className={`todo-item__failed-btn ${todo.failed ? 'todo-item__failed-btn--active' : ''}`}
+            aria-label="Mark as failed"
+            title={todo.failed ? 'Unmark as failed' : 'Mark as failed'}
+          >
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <path
+                d="M1.5 1.5L9.5 9.5M9.5 1.5L1.5 9.5"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
           <button
             type="button"

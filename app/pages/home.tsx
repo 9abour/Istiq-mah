@@ -26,10 +26,8 @@ import {
   isToday,
   toDateString,
 } from '../../src/lib/utils';
-import {
-  createCalendarEvent,
-} from '../../src/services/calendar.service';
 import { getAthkar } from '../../src/services/athkar.service';
+import { createCalendarEvent } from '../../src/services/calendar.service';
 import { getPrayers } from '../../src/services/prayers.service';
 import { useAuthStore } from '../../src/stores/auth.store';
 import { useTodosStore } from '../../src/stores/todos.store';
@@ -92,7 +90,14 @@ function Home() {
   const navigate = useNavigate();
 
   // Auth
-  const { user, loading: authLoading, configured, initAuth, googleAccessToken, signInWithGoogle } = useAuthStore();
+  const {
+    user,
+    loading: authLoading,
+    configured,
+    initAuth,
+    googleAccessToken,
+    signInWithGoogle,
+  } = useAuthStore();
   // googleAccessToken kept for the auto-sync guard (we still need to know if signed in)
   useEffect(() => {
     const unsub = initAuth();
@@ -130,6 +135,7 @@ function Home() {
     fetchTodos,
     addTodo,
     toggleTodo,
+    markAsFailed,
     editTodo,
     updateTodoTime,
     removeTodo,
@@ -208,7 +214,13 @@ function Home() {
   const handleAdd = async () => {
     if (!prayer || !addText.trim() || addLoading) return;
     setAddLoading(true);
-    const newTodo = await addTodo(selectedDate, prayer.name, addText, addStart, addEnd);
+    const newTodo = await addTodo(
+      selectedDate,
+      prayer.name,
+      addText,
+      addStart,
+      addEnd
+    );
     setAddLoading(false);
     setAddText('');
 
@@ -438,17 +450,69 @@ function Home() {
                   type="button"
                   className={`page__auto-sync-btn ${autoCalSync ? 'page__auto-sync-btn--on' : ''}`}
                   onClick={handleAutoCalSyncToggle}
-                  title={autoCalSync ? 'Auto-sync to Google Calendar: ON' : 'Auto-sync to Google Calendar: OFF'}
+                  title={
+                    autoCalSync
+                      ? 'Auto-sync to Google Calendar: ON'
+                      : 'Auto-sync to Google Calendar: OFF'
+                  }
                 >
-                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="1" y="2.5" width="12" height="10.5" rx="1.5" stroke="currentColor" strokeWidth="1.3" fill={autoCalSync ? 'rgba(76,175,138,0.15)' : 'none'} />
-                    <line x1="1" y1="5.5" x2="13" y2="5.5" stroke="currentColor" strokeWidth="1.3" />
-                    <line x1="4.5" y1="1" x2="4.5" y2="4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-                    <line x1="9.5" y1="1" x2="9.5" y2="4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-                    {autoCalSync && <path d="M4.5 8.5L6 10L9.5 7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />}
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect
+                      x="1"
+                      y="2.5"
+                      width="12"
+                      height="10.5"
+                      rx="1.5"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                      fill={autoCalSync ? 'rgba(76,175,138,0.15)' : 'none'}
+                    />
+                    <line
+                      x1="1"
+                      y1="5.5"
+                      x2="13"
+                      y2="5.5"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                    />
+                    <line
+                      x1="4.5"
+                      y1="1"
+                      x2="4.5"
+                      y2="4"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                      strokeLinecap="round"
+                    />
+                    <line
+                      x1="9.5"
+                      y1="1"
+                      x2="9.5"
+                      y2="4"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                      strokeLinecap="round"
+                    />
+                    {autoCalSync && (
+                      <path
+                        d="M4.5 8.5L6 10L9.5 7"
+                        stroke="currentColor"
+                        strokeWidth="1.3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    )}
                   </svg>
                   <span>Auto-sync</span>
-                  <span className={`page__auto-sync-pill ${autoCalSync ? 'page__auto-sync-pill--on' : ''}`}>
+                  <span
+                    className={`page__auto-sync-pill ${autoCalSync ? 'page__auto-sync-pill--on' : ''}`}
+                  >
                     {autoCalSync ? 'ON' : 'OFF'}
                   </span>
                 </button>
@@ -541,6 +605,7 @@ function Home() {
                     onCalendarSync={(eventId) =>
                       setCalendarEventId(t.id, eventId)
                     }
+                    onMarkFailed={() => markAsFailed(t.id)}
                     minTime={timeMin}
                     maxTime={timeMax}
                     wrapsMidnight={isIsha}
