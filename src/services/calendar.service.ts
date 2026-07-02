@@ -5,6 +5,21 @@ const GCAL_EVENTS = '/calendar/v3/calendars/primary/events';
 
 // ── Event builder ─────────────────────────────────────────────────────────────
 
+function buildDescription(todo: Todo): string {
+  let desc = `Prayer: ${todo.prayerName} · Istiqāmah`;
+
+  if (todo.startTime && todo.endTime) {
+    desc += `\nTime: ${todo.startTime} - ${todo.endTime}`;
+  }
+
+  if (todo.loggedTime) {
+    const minutes = Math.round(todo.loggedTime / 60);
+    desc += `\nLogged: ${minutes} min`;
+  }
+
+  return desc;
+}
+
 type CalendarEvent = {
   summary: string;
   colorId: string;
@@ -21,32 +36,37 @@ type CalendarEvent = {
  * @param overrideDone  When provided, uses this value instead of todo.done.
  *                      Needed right after an optimistic toggle before the
  *                      component re-renders with the new state.
+ * @param overrideFailed When provided, uses this value instead of todo.failed.
  */
 function buildEvent(
   todo: Todo,
   date: string,
-  overrideDone?: boolean
+  overrideDone?: boolean,
+  overrideFailed?: boolean
 ): CalendarEvent {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const hasTime = Boolean(todo.startTime && todo.endTime);
   const isDone = overrideDone !== undefined ? overrideDone : todo.done;
+  const isFailed = overrideFailed !== undefined ? overrideFailed : todo.failed;
 
-  // Detect overdue: past date and not done
+  // Detect overdue: past date and not done and not failed
   const today = new Date().toISOString().slice(0, 10);
-  const isOverdue = !isDone && date < today;
+  const isOverdue = !isDone && !isFailed && date < today;
 
-  // ✓ done (Sage green), ✗ overdue not-done (Tomato red), plain otherwise
+  // ✓ done (Sage green), ✗ failed/overdue (Tomato red), plain otherwise
   const summary = isDone
     ? `✓ ${todo.text}`
-    : isOverdue
+    : isFailed
       ? `✗ ${todo.text}`
-      : todo.text;
-  const colorId = isDone ? '2' : isOverdue ? '11' : '0';
+      : isOverdue
+        ? `${todo.text}`
+        : todo.text;
+  const colorId = isDone ? '2' : isFailed ? '11' : isOverdue ? '0' : '0';
 
   const base = {
     summary,
     colorId,
-    description: `Prayer: ${todo.prayerName} · Istiqāmah`,
+    description: buildDescription(todo),
   };
 
   if (hasTime) {
@@ -87,11 +107,12 @@ export async function updateCalendarEvent(
   eventId: string,
   todo: Todo,
   date: string,
-  overrideDone?: boolean
+  overrideDone?: boolean,
+  overrideFailed?: boolean
 ): Promise<void> {
   await googleApi.patch(
     `${GCAL_EVENTS}/${eventId}`,
-    buildEvent(todo, date, overrideDone)
+    buildEvent(todo, date, overrideDone, overrideFailed)
   );
 }
 

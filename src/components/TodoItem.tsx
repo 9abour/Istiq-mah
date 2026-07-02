@@ -175,12 +175,30 @@ export function TodoItem({
     setDisplayedSeconds(total);
     await updateTodoLoggedTime(todo.id, total);
     await updateTodoTimerStartedAt(todo.id, null);
+
+    // Update Google Calendar with new logged time
+    if (todo.calendarEventId) {
+      try {
+        await updateCalendarEvent(
+          todo.calendarEventId,
+          { ...todo, loggedTime: total },
+          selectedDate,
+          todo.done,
+          todo.failed
+        );
+      } catch {
+        // Best-effort
+      }
+    }
   }, [
     timerRunning,
     getCurrentTotal,
     updateTodoLoggedTime,
     updateTodoTimerStartedAt,
     todo.id,
+    todo.calendarEventId,
+    todo,
+    selectedDate,
   ]);
 
   // Tick every second while running
@@ -256,6 +274,7 @@ export function TodoItem({
 
   const handleToggle = async () => {
     const newDone = !todo.done;
+    const newFailed = newDone ? false : todo.failed;
     onToggle();
     if (isSynced && todo.calendarEventId) {
       try {
@@ -263,7 +282,27 @@ export function TodoItem({
           todo.calendarEventId,
           todo,
           selectedDate,
-          newDone
+          newDone,
+          newFailed
+        );
+      } catch {
+        // Best-effort
+      }
+    }
+  };
+
+  const handleMarkFailed = async () => {
+    const newFailed = !todo.failed;
+    const newDone = newFailed ? false : todo.done;
+    onMarkFailed();
+    if (isSynced && todo.calendarEventId) {
+      try {
+        await updateCalendarEvent(
+          todo.calendarEventId,
+          todo,
+          selectedDate,
+          newDone,
+          newFailed
         );
       } catch {
         // Best-effort
@@ -297,7 +336,9 @@ export function TodoItem({
         await updateCalendarEvent(
           todo.calendarEventId,
           { ...todo, text: trimmed },
-          selectedDate
+          selectedDate,
+          todo.done,
+          todo.failed
         );
       } catch {
         // Best-effort
@@ -346,7 +387,9 @@ export function TodoItem({
           await updateCalendarEvent(
             todo.calendarEventId,
             { ...todo, startTime: newStart, endTime: newEnd },
-            selectedDate
+            selectedDate,
+            todo.done,
+            todo.failed
           );
         } catch {
           /* best-effort */
@@ -394,10 +437,10 @@ export function TodoItem({
           </svg>
         )}
         {todo.failed && (
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
             <path
               d="M1 1L9 9M9 1L1 9"
-              stroke="#dc2626"
+              stroke="#090f10"
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -546,7 +589,7 @@ export function TodoItem({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onMarkFailed();
+              handleMarkFailed();
             }}
             className={`todo-item__failed-btn ${todo.failed ? 'todo-item__failed-btn--active' : ''}`}
             aria-label="Mark as failed"

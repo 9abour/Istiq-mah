@@ -1,9 +1,10 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 export type Todo = {
   id: string;
   text: string;
   done: boolean;
+  failed?: boolean;
   prayerName: PrayerName;
   /** ISO date string YYYY-MM-DD; todos are scoped per day */
   date: string;
@@ -15,9 +16,11 @@ export type Todo = {
   calendarEventId?: string;
   /** Total logged time in seconds */
   loggedTime?: number;
+  /** Timestamp (ms) when timer was started, for persistent timer across app closes */
+  timerStartedAt?: number;
 };
 
-export type PrayerName = "Fajr" | "Dhuhr" | "Asr" | "Maghrib" | "Isha";
+export type PrayerName = 'Fajr' | 'Dhuhr' | 'Asr' | 'Maghrib' | 'Isha';
 
 export type Prayer = {
   name: PrayerName;
@@ -33,7 +36,7 @@ export type Athkar = {
   source: string;
 };
 
-export type Filter = "all" | "pending" | "done";
+export type Filter = 'all' | 'pending' | 'done';
 
 export type SavedLocation = {
   latitude: number;

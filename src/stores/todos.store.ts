@@ -84,10 +84,17 @@ export const useTodosStore = create<TodosState>((set, get) => ({
     const todo = get().todos.find((t) => t.id === id);
     if (!todo) return;
     set({ error: null });
-    const optimistic = { ...todo, done: !todo.done };
+    const newDone = !todo.done;
+    // If marking as done and it was failed, remove failed status
+    const newFailed = newDone ? false : todo.failed;
+    const optimistic = { ...todo, done: newDone, failed: newFailed };
     set((s) => ({ todos: s.todos.map((t) => (t.id === id ? optimistic : t)) }));
     try {
-      await updateTodoApi(id, { done: !todo.done }, currentUserId());
+      const patch: { done: boolean; failed?: boolean } = { done: newDone };
+      if (newFailed !== todo.failed) {
+        patch.failed = newFailed;
+      }
+      await updateTodoApi(id, patch, currentUserId());
     } catch (e) {
       // rollback
       set((s) => ({ todos: s.todos.map((t) => (t.id === id ? todo : t)) }));
@@ -99,10 +106,17 @@ export const useTodosStore = create<TodosState>((set, get) => ({
     const todo = get().todos.find((t) => t.id === id);
     if (!todo) return;
     set({ error: null });
-    const optimistic = { ...todo, failed: !todo.failed };
+    const newFailed = !todo.failed;
+    // If marking as failed and it was done, remove done status
+    const newDone = newFailed ? false : todo.done;
+    const optimistic = { ...todo, failed: newFailed, done: newDone };
     set((s) => ({ todos: s.todos.map((t) => (t.id === id ? optimistic : t)) }));
     try {
-      await updateTodoApi(id, { failed: !todo.failed }, currentUserId());
+      const patch: { failed: boolean; done?: boolean } = { failed: newFailed };
+      if (newDone !== todo.done) {
+        patch.done = newDone;
+      }
+      await updateTodoApi(id, patch, currentUserId());
     } catch (e) {
       // rollback
       set((s) => ({ todos: s.todos.map((t) => (t.id === id ? todo : t)) }));
