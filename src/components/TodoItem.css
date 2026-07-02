@@ -42,7 +42,7 @@
 
 .todo-item--failed .todo-item__checkbox {
   border-color: #c94c4c;
-  background: #aa3737;
+  background: rgb(183, 61, 61);
   box-shadow: 0 0 10px rgba(201, 76, 76, 0.4);
 }
 
