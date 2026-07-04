@@ -35,10 +35,16 @@
   background: rgba(201, 168, 76, 0.07);
 }
 
-.trp__clock-icon { flex-shrink: 0; }
+.trp__clock-icon {
+  flex-shrink: 0;
+}
 
-.trp__trigger-placeholder { font-weight: 400; }
-.trp__trigger-time        { font-weight: 500; }
+.trp__trigger-placeholder {
+  font-weight: 400;
+}
+.trp__trigger-time {
+  font-weight: 500;
+}
 
 .trp__trigger-dash {
   color: rgba(255, 255, 255, 0.35);
@@ -69,8 +75,12 @@
 }
 
 @keyframes trp-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -93,8 +103,14 @@
 }
 
 @keyframes trp-slide-up {
-  from { opacity: 0; transform: translateY(16px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ── Header ──────────────────────────────────────────── */
@@ -140,7 +156,9 @@
   background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   margin-top: -2px;
 }
 
@@ -238,8 +256,12 @@
   scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
 }
 
-.trp-modal__timeline::-webkit-scrollbar { width: 4px; }
-.trp-modal__timeline::-webkit-scrollbar-track { background: transparent; }
+.trp-modal__timeline::-webkit-scrollbar {
+  width: 4px;
+}
+.trp-modal__timeline::-webkit-scrollbar-track {
+  background: transparent;
+}
 .trp-modal__timeline::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
@@ -349,8 +371,12 @@
   z-index: 20;
 }
 
-.trp-modal__handle--top  { cursor: n-resize; }
-.trp-modal__handle--bottom { cursor: s-resize; }
+.trp-modal__handle--top {
+  cursor: n-resize;
+}
+.trp-modal__handle--bottom {
+  cursor: s-resize;
+}
 
 .trp-modal__handle::after {
   content: '';
@@ -359,7 +385,9 @@
   height: 3px;
   border-radius: 2px;
   background: rgba(201, 168, 76, 0.75);
-  transition: background 0.15s, width 0.15s;
+  transition:
+    background 0.15s,
+    width 0.15s;
 }
 
 .trp-modal__handle:hover::after {
@@ -465,7 +493,9 @@
   font-family: 'DM Sans', sans-serif;
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
 }
 
 .trp-modal__confirm:hover {
@@ -496,7 +526,13 @@
   }
 
   @keyframes trp-slide-up {
-    from { opacity: 0; transform: translateY(40px); }
-    to   { opacity: 1; transform: translateY(0);    }
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }

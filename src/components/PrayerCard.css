@@ -6,7 +6,7 @@
   transition: all 0.25s;
   user-select: none;
   padding: 16px 14px 14px;
-  background: rgba(14, 24, 26, 0.95);
+  background: #161616;
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
 

@@ -429,7 +429,7 @@ export function TodoItem({
           <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
             <path
               d="M1 4L3.5 6.5L9 1"
-              stroke="#090f10"
+              stroke="#0a0a0a"
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -440,7 +440,7 @@ export function TodoItem({
           <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
             <path
               d="M1 1L9 9M9 1L1 9"
-              stroke="#090f10"
+              stroke="#0a0a0a"
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"

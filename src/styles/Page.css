@@ -2,7 +2,7 @@
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  background: #090f10;
+  background: #0a0a0a;
   font-family: 'DM Sans', sans-serif;
 }
 
@@ -146,7 +146,7 @@
 .page__left-panel {
   border-radius: 1rem;
   overflow: hidden;
-  background: rgba(14, 24, 26, 0.95);
+  background: #161616;
   border: 1px solid rgba(201, 168, 76, 0.28);
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
   position: sticky;
@@ -265,7 +265,7 @@
 .page__right-panel {
   border-radius: 1rem;
   overflow: hidden;
-  background: rgba(18, 30, 32, 0.9);
+  background: #161616;
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -535,7 +535,7 @@
   padding: 6px 13px;
   border-radius: 10px;
   background: #c9a84c;
-  color: #090f10;
+  color: #0a0a0a;
   border: none;
   cursor: pointer;
   font-family: 'Syne', sans-serif;
@@ -558,7 +558,7 @@
   width: 12px;
   height: 12px;
   border: 2px solid rgba(9, 15, 16, 0.3);
-  border-top-color: #090f10;
+  border-top-color: #0a0a0a;
   border-radius: 50%;
   animation: page-spin 0.65s linear infinite;
 }
@@ -566,7 +566,12 @@
 /* Thin animated loading bar shown above the todo list while re-fetching */
 .page__loading-bar {
   height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #c9a84c 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #c9a84c 50%,
+    transparent 100%
+  );
   background-size: 200% 100%;
   animation: page-loading-bar 1.4s ease-in-out infinite;
 }
@@ -609,12 +614,18 @@
 }
 
 @keyframes page-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes page-loading-bar {
-  0%   { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
 }
 
 .page__day-progress {

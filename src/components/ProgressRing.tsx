@@ -1,5 +1,4 @@
-import React from "react";
-import "./ProgressRing.css";
+import './ProgressRing.css';
 
 type ProgressRingProps = { done: number; total: number };
 
@@ -27,7 +26,9 @@ export function ProgressRing({ done, total }: ProgressRingProps) {
         />
       </svg>
       <div className="progress-ring__content">
-        <span className="progress-ring__value">{total ? `${done}/${total}` : "—"}</span>
+        <span className="progress-ring__value">
+          {total ? `${done}/${total}` : '—'}
+        </span>
         <span className="progress-ring__label">tasks</span>
       </div>
     </div>

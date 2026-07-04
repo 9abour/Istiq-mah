@@ -9,7 +9,7 @@
   background: rgba(201, 168, 76, 0.05);
   color: rgba(201, 168, 76, 0.65);
   font-size: 12px;
-  font-family: "DM Sans", sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.18s;
@@ -41,10 +41,13 @@
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.82);
   font-size: 13px;
-  font-family: "DM Sans", sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.18s, border-color 0.18s, opacity 0.18s;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    opacity 0.18s;
   white-space: nowrap;
   user-select: none;
 }
@@ -70,8 +73,13 @@
 }
 
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.5; }
-  50%       { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* Signing-in spinner */
@@ -87,7 +95,9 @@
 }
 
 @keyframes btn-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Signed-in state ─────────────────────────────── */
@@ -114,12 +124,12 @@
   color: #c9a84c;
   font-size: 12px;
   font-weight: 700;
-  font-family: "DM Sans", sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .login-btn__name {
   font-size: 13px;
-  font-family: "DM Sans", sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.72);
   max-width: 90px;
@@ -159,7 +169,7 @@
   background: rgba(220, 60, 60, 0.12);
   border: 1px solid rgba(220, 60, 60, 0.25);
   font-size: 11px;
-  font-family: "DM Sans", sans-serif;
+  font-family: 'DM Sans', sans-serif;
   color: rgba(255, 130, 130, 0.9);
   max-width: 240px;
   line-height: 1.45;
@@ -171,8 +181,14 @@
 }
 
 @keyframes err-fade-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .login-btn__error-close {
